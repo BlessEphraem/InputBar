@@ -1,5 +1,8 @@
 # Hotkeys.json
 
+A huge shout-out to my friend [@vlad-samp](https://github.com/vlad-samp).
+Without him, implementing a low-level hook to intercept the Windows key wouldn't have been possible.
+
 Global keyboard shortcuts.
 
 ```json
