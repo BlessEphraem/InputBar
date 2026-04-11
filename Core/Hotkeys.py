@@ -11,10 +11,66 @@ HOTKEYS_FILE = os.path.join(DATA_DIR, "hotkeys.json")
 
 _WIN_KEY_NAMES = {"lwin", "rwin", "win"}
 
-# Modifier keys recognised by the keyboard lib (for parsing)
-_MODIFIERS = {"ctrl", "alt", "shift", "lwin", "rwin", "win"}
+# Modifier keys recognised for parsing
+_MODIFIERS = {"ctrl", "alt", "shift", "lwin", "rwin", "win",
+              "lctrl", "rctrl", "lalt", "ralt", "lshift", "rshift"}
 
-# Mapping: key name → Virtual Key code (Windows VK_*)
+# Input variants → canonical short form.
+# Applied to every key token when loading/normalising a hotkey string.
+_ALIASES: dict[str, str] = {
+    # Ctrl
+    "left ctrl":    "lctrl",
+    "right ctrl":   "rctrl",
+    # Alt
+    "left alt":     "lalt",
+    "right alt":    "ralt",
+    # Shift
+    "left shift":   "lshift",
+    "right shift":  "rshift",
+    # Win (already short, kept for completeness)
+    "left win":     "lwin",
+    "right win":    "rwin",
+    # Numpad — long → short
+    "numpad0": "num0", "numpad1": "num1", "numpad2": "num2",
+    "numpad3": "num3", "numpad4": "num4", "numpad5": "num5",
+    "numpad6": "num6", "numpad7": "num7", "numpad8": "num8",
+    "numpad9": "num9",
+    "num *": "num*", "num +": "num+", "num -": "num-",
+    "num .": "num.", "num /": "num/",
+    # Media
+    "media next track": "next track",
+    "media prev track": "previous track",
+    "media play/pause": "play/pause",
+    "media stop":       "stop",
+    # Escape alias
+    "esc": "escape",
+    # Windows alias
+    "windows": "win",
+}
+
+# Canonical short form → name expected by the `keyboard` lib (non-Win path only).
+_TO_KB_LIB: dict[str, str] = {
+    "lctrl":  "left ctrl",
+    "rctrl":  "right ctrl",
+    "lalt":   "left alt",
+    "ralt":   "right alt",
+    "lshift": "left shift",
+    "rshift": "right shift",
+    # Numpad
+    "num0": "numpad0", "num1": "numpad1", "num2": "numpad2",
+    "num3": "numpad3", "num4": "numpad4", "num5": "numpad5",
+    "num6": "numpad6", "num7": "numpad7", "num8": "numpad8",
+    "num9": "numpad9",
+    "num*": "num *", "num+": "num +", "num-": "num -",
+    "num.": "num .", "num/": "num /",
+    # Media
+    "next track":     "media next track",
+    "previous track": "media prev track",
+    "play/pause":     "media play/pause",
+    "stop":           "media stop",
+}
+
+# Mapping: canonical key name → Virtual Key code (Windows VK_*)
 _KEY_TO_VK: dict[str, int] = {
     # Letters
     "a": 0x41, "b": 0x42, "c": 0x43, "d": 0x44, "e": 0x45,
@@ -32,28 +88,31 @@ _KEY_TO_VK: dict[str, int] = {
     "f9": 0x78, "f10": 0x79, "f11": 0x7A, "f12": 0x7B,
     "f13": 0x7C, "f14": 0x7D, "f15": 0x7E, "f16": 0x7F,
     "f17": 0x80, "f18": 0x81, "f19": 0x82, "f20": 0x83,
-    # Modifiers
-    "ctrl": 0x11, "left ctrl": 0xA2, "right ctrl": 0xA3,
-    "alt": 0x12, "left alt": 0xA4, "right alt": 0xA5,
-    "shift": 0x10, "left shift": 0xA0, "right shift": 0xA1,
+    # Modifiers — generic
+    "ctrl": 0x11, "alt": 0x12, "shift": 0x10,
+    # Modifiers — sided (canonical short forms)
+    "lctrl": 0xA2, "rctrl": 0xA3,
+    "lalt":  0xA4, "ralt":  0xA5,
+    "lshift":0xA0, "rshift":0xA1,
     # Navigation
-    "space": 0x20, "enter": 0x0D, "tab": 0x09, "escape": 0x1B, "esc": 0x1B,
+    "space": 0x20, "enter": 0x0D, "tab": 0x09, "escape": 0x1B,
     "backspace": 0x08, "delete": 0x2E, "insert": 0x2D,
     "home": 0x24, "end": 0x23, "page up": 0x21, "page down": 0x22,
     "up": 0x26, "down": 0x28, "left": 0x25, "right": 0x27,
-    # Numpad
-    "numpad0": 0x60, "numpad1": 0x61, "numpad2": 0x62, "numpad3": 0x63,
-    "numpad4": 0x64, "numpad5": 0x65, "numpad6": 0x66, "numpad7": 0x67,
-    "numpad8": 0x68, "numpad9": 0x69,
-    "num *": 0x6A, "num +": 0x6B, "num -": 0x6D, "num .": 0x6E, "num /": 0x6F,
-    # Media
+    # Numpad (canonical short forms)
+    "num0": 0x60, "num1": 0x61, "num2": 0x62, "num3": 0x63,
+    "num4": 0x64, "num5": 0x65, "num6": 0x66, "num7": 0x67,
+    "num8": 0x68, "num9": 0x69,
+    "num*": 0x6A, "num+": 0x6B, "num-": 0x6D, "num.": 0x6E, "num/": 0x6F,
+    "num enter": 0x6C,
+    # Media (canonical short forms)
     "volume mute": 0xAD, "volume down": 0xAE, "volume up": 0xAF,
-    "media next track": 0xB0, "media prev track": 0xB1,
-    "media stop": 0xB2, "media play/pause": 0xB3,
+    "next track": 0xB0, "previous track": 0xB1,
+    "stop": 0xB2, "play/pause": 0xB3,
     # Misc
     "print screen": 0x2C, "scroll lock": 0x91, "pause": 0x13,
     "caps lock": 0x14, "num lock": 0x90,
-    "windows": 0x5B, "lwin": 0x5B, "rwin": 0x5C, "win": 0x5B,
+    "win": 0x5B, "lwin": 0x5B, "rwin": 0x5C,
 }
 
 # Internal state
@@ -121,11 +180,19 @@ def load_hotkeys() -> dict:
             user_hotkeys[key] = value
             updated = True
 
+    # Normalise all values to canonical short forms and rewrite if anything changed
+    for key, value in user_hotkeys.items():
+        normalised = _normalize_hotkey(value)
+        if normalised != value:
+            dprint(f"Hotkeys: normalised '{value}' → '{normalised}'")
+            user_hotkeys[key] = normalised
+            updated = True
+
     if updated:
         try:
             with open(HOTKEYS_FILE, "w", encoding="utf-8") as f:
                 json.dump(user_hotkeys, f, indent=4)
-            dprint("Hotkeys: new keys injected into hotkeys.json")
+            dprint("Hotkeys: hotkeys.json updated")
         except Exception as e:
             eprint(f"Hotkeys: save error ({e})")
 
@@ -136,11 +203,21 @@ def load_hotkeys() -> dict:
 #  Parsing
 # ─────────────────────────────────────────────
 
+def _normalize_hotkey(hotkey: str) -> str:
+    """
+    Normalises a hotkey string to canonical short forms.
+    Example: "Left Ctrl+F1"  → "lctrl+f1"
+    Example: "numpad0+space" → "num0+space"
+    """
+    parts = [p.strip().lower() for p in hotkey.split("+") if p.strip()]
+    return "+".join(_ALIASES.get(p, p) for p in parts)
+
+
 def _parse_hotkey(hotkey: str) -> tuple[bool, list[str]]:
     """
-    Splits a hotkey string into normalised parts.
+    Splits a (already normalised) hotkey string into parts.
     Returns (has_win_key, parts).
-    Example: "LWin+A"     → (True,  ["lwin", "a"])
+    Example: "lwin+a"     → (True,  ["lwin", "a"])
     Example: "ctrl+space" → (False, ["ctrl", "space"])
     """
     parts   = [p.strip().lower() for p in hotkey.split("+") if p.strip()]
@@ -254,7 +331,10 @@ def register_hotkeys(hotkeys_config: dict, callback_show):
     else:
         try:
             import keyboard as kb
-            kb.add_hotkey(show_key, callback_show)
+            # Translate canonical short forms back to names the keyboard lib understands
+            kb_parts  = [_TO_KB_LIB.get(p, p) for p in parts]
+            kb_hotkey = "+".join(kb_parts)
+            kb.add_hotkey(kb_hotkey, callback_show)
             dprint(f"Hotkeys: shortcut registered ({show_key})")
         except Exception as e:
             eprint(f"Hotkeys: shortcut '{show_key}' invalid or unsupported ({e})")

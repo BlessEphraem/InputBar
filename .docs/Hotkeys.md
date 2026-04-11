@@ -44,23 +44,25 @@ A shortcut is a string made of **one or more keys joined by `+`**.
 
 These are the keys you hold while pressing another.
 
-| Value | Key |
-|---|---|
-| `ctrl` | Ctrl (left or right) |
-| `left ctrl` | Left Ctrl only |
-| `right ctrl` | Right Ctrl only |
-|---|---|
-| `alt` | Alt (left or right) |
-| `left alt` | Left Alt only |
-| `right alt` | Right Alt only |
-|---|---|
-| `shift` | Shift (left or right) |
-| `left shift` | Left Shift only |
-| `right shift` | Right Shift only |
-|---|---|
-| `win` | Windows key (left or right) ⚠️ |
-| `lwin` | Windows key (left only) ⚠️ |
-| `rwin` | Windows key (right only) ⚠️ |
+| Value | Alias | Key |
+|---|---|---|
+| `ctrl` | | Ctrl (left or right) |
+| `lctrl` | `left ctrl` | Left Ctrl only |
+| `rctrl` | `right ctrl` | Right Ctrl only |
+|---|---|---|
+| `alt` | | Alt (left or right) |
+| `lalt` | `left alt` | Left Alt only |
+| `ralt` | `right alt` | Right Alt only |
+|---|---|---|
+| `shift` | | Shift (left or right) |
+| `lshift` | `left shift` | Left Shift only |
+| `rshift` | `right shift` | Right Shift only |
+|---|---|---|
+| `win` | | Windows key (left or right) ⚠️ |
+| `lwin` | `left win` | Windows key (left only) ⚠️ |
+| `rwin` | `right win` | Windows key (right only) ⚠️ |
+
+> **Aliases:** Both forms are accepted and automatically normalised to the short form in `hotkeys.json`.
 
 > **Windows key:** When `win`, `lwin`, or `rwin` is part of the shortcut, InputBar automatically launches a background process (`winkey_hook.exe`) that intercepts the key at system level, preventing the Start Menu from opening. The process is completely invisible.
 
@@ -118,26 +120,27 @@ f13 f14 f15 f16 f17 f18 f19 f20
 
 **Numpad**
 
-| Value | Key |
-|---|---|
-| `num0` – `num9` | Numpad 0 to 9 |
-| `num+` | Numpad + |
-| `num-` | Numpad − |
-| `num*` | Numpad × |
-| `num/` | Numpad ÷ |
-| `num.` | Numpad . |
-| `num enter` | Numpad Enter |
+| Value | Alias | Key |
+|---|---|---|
+| `num0` – `num9` | `numpad0` – `numpad9` | Numpad 0 to 9 |
+| `num+` | `num +` | Numpad + |
+| `num-` | `num -` | Numpad − |
+| `num*` | `num *` | Numpad × |
+| `num/` | `num /` | Numpad ÷ |
+| `num.` | `num .` | Numpad . |
+| `num enter` | | Numpad Enter |
 
 **Media keys** *(on supported keyboards)*
 
-| Value | Key |
-|---|---|
-| `play/pause` | Play / Pause |
-| `next track` | Next track |
-| `previous track` | Previous track |
-| `volume up` | Volume up |
-| `volume down` | Volume down |
-| `volume mute` | Mute |
+| Value | Alias | Key |
+|---|---|---|
+| `play/pause` | `media play/pause` | Play / Pause |
+| `next track` | `media next track` | Next track |
+| `previous track` | `media prev track` | Previous track |
+| `stop` | `media stop` | Stop |
+| `volume up` | | Volume up |
+| `volume down` | | Volume down |
+| `volume mute` | | Mute |
 
 ---
 
