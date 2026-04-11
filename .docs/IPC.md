@@ -1,5 +1,7 @@
 ## External Trigger (IPC)
 
+<a href="Configuration.md"><kbd>← Go back to Configuration page</kbd></a>
+
 InputBar listens on a local pipe `InputBar_Singleton_Lock`.  
 
 Compatible with AutoHotkey, PowerShell, or any tool that can launch a process.

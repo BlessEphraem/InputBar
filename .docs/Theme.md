@@ -1,5 +1,7 @@
 # Themes
 
+<a href="Configuration.md"><kbd>← Go back to Configuration page</kbd></a>
+
 Themes control the full visual appearance of InputBar. They are stored as `.json` files in `Data/Themes/`.
 
 ## Switching themes

@@ -1,5 +1,7 @@
 # Plugins.json
 
+<a href="Configuration.md"><kbd>← Go back to Configuration page</kbd></a>
+
 Plugin management. Edit directly or via the `plugin` command inside InputBar.
 
 ```json

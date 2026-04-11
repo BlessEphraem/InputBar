@@ -1,5 +1,7 @@
 # Writing a plugin
 
+<a href="Configuration.md"><kbd>← Go back to Configuration page</kbd></a>
+
 ## Clone the repository
 
 Create a destination folder for the project, then open your preferred terminal or command prompt (e.g., CMD, PowerShell, or Git Bash). Run the following commands, making sure to replace the placeholder path with your actual folder directory:

@@ -1,5 +1,7 @@
 # Hotkeys.json
 
+<a href="Configuration.md"><kbd>← Go back to Configuration page</kbd></a>
+
 A huge shout-out to my friend [@vlad-samp](https://github.com/vlad-samp).
 Without him, implementing a low-level hook to intercept the Windows key wouldn't have been possible.
 
