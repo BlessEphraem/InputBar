@@ -21,6 +21,10 @@ def _deep_merge(default: dict, user: dict) -> tuple[dict, bool]:
                 updated = True
         else:
             merged[key] = user[key]
+    # Preserve keys the user added that aren't in the default schema
+    for key, val in user.items():
+        if key not in default:
+            merged[key] = val
     return merged, updated
 
 

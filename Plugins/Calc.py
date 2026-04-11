@@ -1,8 +1,19 @@
 import re
 import os
+import subprocess
 
 def copy_to_clipboard(text):
-    os.system(f"echo {text}| clip")
+    try:
+        flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+        proc  = subprocess.Popen(
+            ['clip'],
+            stdin=subprocess.PIPE,
+            shell=False,
+            creationflags=flags,
+        )
+        proc.communicate(input=str(text).encode('utf-16le'))
+    except Exception:
+        pass
 
 def on_search(text):
     results = []

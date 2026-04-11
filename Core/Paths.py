@@ -51,7 +51,6 @@ for folder in [CORE_DIR, DATA_DIR, THEMES_DIR, PLUGINS_DIR, CACHE_DIR]:
 # Data files
 HISTORY_FILE = os.path.join(DATA_DIR, "search_history.json")
 PLUGINS_FILE = os.path.join(DATA_DIR, "Plugins.json")
-CORE_FILE    = os.path.join(DATA_DIR, "Core.json")
 CONFIG_FILE  = os.path.join(DATA_DIR, "Config.json")
 
 LOG_FILE = os.path.join(tempfile.gettempdir(), "InputBar.log")

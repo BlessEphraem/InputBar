@@ -10,6 +10,8 @@ try:
 except ImportError:
     _HAS_WIN32COM = False
 
+from Core.Logging import eprint as _eprint
+
 MAX_TOTAL_ITEMS = 200
 apps_index = []
 ALIASES    = {}
@@ -41,7 +43,7 @@ def load_aliases():
                         key, value = line.split("=", 1)
                         ALIASES[key.strip().lower()] = value.strip().lower()
         except Exception as e:
-            print(f"App Plugin: Unable to load aliases.data ({e})")
+            _eprint(f"App Plugin: Unable to load aliases.data ({e})")
 
 
 def resolve_lnk(lnk_path: str) -> str | None:
@@ -183,14 +185,14 @@ def build_index():
                         "acronym":  _generate_acronym(name),
                     })
     except Exception as e:
-        print(f"App Plugin: Error indexing UWP apps ({e})")
+        _eprint(f"App Plugin: Error indexing UWP apps ({e})")
 
     # --- 3. SCAN WINDOWS REGISTRY ---
     try:
         reg_entries = _scan_registry(seen_names)
         apps_index.extend(reg_entries)
     except Exception as e:
-        print(f"App Plugin: Error scanning registry ({e})")
+        _eprint(f"App Plugin: Error scanning registry ({e})")
 
 
 # Initialisation

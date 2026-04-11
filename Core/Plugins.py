@@ -2,55 +2,97 @@ import os
 import json
 import sys
 import importlib.util
-from Core.Paths import PLUGINS_DIR, CORE_DIR, PLUGINS_FILE, CORE_FILE
+from Core.Paths import PLUGINS_DIR, CORE_DIR, PLUGINS_FILE
 from Core.Logging import dprint, eprint
 
 loaded_plugins = []
 
-def _sync_config_file(filepath, current_files, is_plugin):
+# Plugins that should always respond to every query (global mode).
+# Even if Plugins.json was generated before "calc" was in this set,
+# the runtime check below injects "*" at load time.
+_ALWAYS_GLOBAL = {"app", "system", "calc"}
+
+
+# ──────────────────────────────────────────────
+#  Core module loader (no config file)
+# ──────────────────────────────────────────────
+
+def _load_core(folder):
+    """Loads Core modules. Always enabled; keyword = module filename (lower-cased)."""
+    if not os.path.exists(folder):
+        return
+    for root, _, filenames in os.walk(folder):
+        for filename in sorted(filenames):
+            if not filename.endswith(".py"):
+                continue
+            path        = os.path.join(root, filename)
+            module_name = filename[:-3]
+            try:
+                spec   = importlib.util.spec_from_file_location(module_name, path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, "on_search"):
+                    module._keywords = [module_name.lower()]
+                    loaded_plugins.append(module)
+                    dprint(f"Core loaded: {module_name} (keyword: {module._keywords})")
+            except Exception as e:
+                eprint(f"Error loading core module {filename}: {e}")
+
+
+# ──────────────────────────────────────────────
+#  Plugin loader (Plugins.json config)
+# ──────────────────────────────────────────────
+
+def _sync_plugins_config(current_files):
+    """
+    Reads Plugins.json, migrates legacy format, adds new plugin entries,
+    then writes it back. Returns the up-to-date config dict.
+    """
     data = {}
-    if os.path.exists(filepath):
+    if os.path.exists(PLUGINS_FILE):
         try:
-            with open(filepath, "r") as f: data = json.load(f)
-        except: data = {}
+            with open(PLUGINS_FILE, "r") as f:
+                data = json.load(f)
+        except:
+            data = {}
 
     new_data = {}
-    # Safe migration from old JSON format (True) to new dictionary format
-    for name, conf in data.items():
-        if name in current_files:
-            if isinstance(conf, bool):
-                base_name = os.path.basename(name)[:-3]
-                kws = [base_name.lower()]
-                if is_plugin and base_name.lower() in ["app", "system"]:
-                    kws.append("*")
-                new_data[name] = {"toggle": conf, "keyword": kws}
-            else:
-                new_data[name] = conf
 
+    # Migrate old format (bool) and keep only files still present on disk
+    for name, conf in data.items():
+        if name not in current_files:
+            continue
+        if isinstance(conf, bool):
+            base_name = os.path.basename(name)[:-3].lower()
+            kws = [base_name]
+            if base_name in _ALWAYS_GLOBAL:
+                kws.append("*")
+            new_data[name] = {"toggle": conf, "keyword": kws}
+        else:
+            new_data[name] = conf
+
+    # Add new plugins not yet tracked
     for file in current_files:
         if file not in new_data:
-            base_name = os.path.basename(file)[:-3]
-            if is_plugin:
-                default_keywords = [base_name.lower()]
-                if base_name.lower() in ["app", "system"]:
-                    default_keywords.append("*")
-                new_data[file] = {
-                    "toggle": True,
-                    "keyword": default_keywords
-                }
+            base_name = os.path.basename(file)[:-3].lower()
+            kws = [base_name]
+            if base_name in _ALWAYS_GLOBAL:
+                kws.append("*")
+            new_data[file] = {"toggle": True, "keyword": kws}
 
-    with open(filepath, "w") as f: json.dump(new_data, f, indent=4)
+    try:
+        with open(PLUGINS_FILE, "w") as f:
+            json.dump(new_data, f, indent=4)
+    except Exception as e:
+        eprint(f"Error writing Plugins.json: {e}")
+
     return new_data
 
-def load_all_modules():
-    global loaded_plugins
-    loaded_plugins = []
-    _load_folder(CORE_DIR, "Core", is_plugin=False)
-    _load_folder(PLUGINS_DIR, "Plugin", is_plugin=True)
-    return loaded_plugins
 
-def _load_folder(folder, type_label, is_plugin=False):
-    if not os.path.exists(folder): return
+def _load_plugins(folder):
+    """Loads user plugins according to Plugins.json (toggle + keywords)."""
+    if not os.path.exists(folder):
+        return
 
     files = []
     for root, _, filenames in os.walk(folder):
@@ -60,16 +102,13 @@ def _load_folder(folder, type_label, is_plugin=False):
                 rel_path = rel_path.replace("\\", "/")
                 files.append(rel_path)
 
-    filepath    = PLUGINS_FILE if is_plugin else CORE_FILE
-    config_data = _sync_config_file(filepath, files, is_plugin)
+    config_data = _sync_plugins_config(files)
 
     for rel_path in files:
-        conf = config_data.get(rel_path, {})
-
+        conf       = config_data.get(rel_path, {})
         is_enabled = conf.get("toggle", True) if isinstance(conf, dict) else True
-        if is_plugin and not is_enabled:
+        if not is_enabled:
             continue
-
         try:
             path        = os.path.abspath(os.path.join(folder, rel_path))
             module_name = os.path.basename(rel_path)[:-3]
@@ -78,32 +117,55 @@ def _load_folder(folder, type_label, is_plugin=False):
             spec.loader.exec_module(module)
 
             if hasattr(module, "on_search"):
-                raw_keywords    = conf.get("keyword", [module_name]) if isinstance(conf, dict) else [module_name]
+                raw_keywords     = conf.get("keyword", [module_name]) if isinstance(conf, dict) else [module_name]
                 module._keywords = [str(k).lower() for k in raw_keywords]
 
+                # Runtime safeguard: ensure always-global plugins have "*"
+                # even if Plugins.json was generated before _ALWAYS_GLOBAL included them.
+                if module_name.lower() in _ALWAYS_GLOBAL and "*" not in module._keywords:
+                    module._keywords.append("*")
+
                 loaded_plugins.append(module)
-                dprint(f"{type_label} loaded: {rel_path} (Keywords: {module._keywords})")
+                dprint(f"Plugin loaded: {rel_path} (keywords: {module._keywords})")
         except Exception as e:
-            eprint(f"Error loading {rel_path}: {e}")
+            eprint(f"Error loading plugin {rel_path}: {e}")
+
+
+def load_all_modules():
+    global loaded_plugins
+    loaded_plugins = []
+    _load_core(CORE_DIR)
+    _load_plugins(PLUGINS_DIR)
+    return loaded_plugins
+
+
+# ──────────────────────────────────────────────
+#  Plugin toggle (on_search exposed to the UI)
+# ──────────────────────────────────────────────
 
 def _toggle_plugin(name, current_status):
     try:
-        with open(PLUGINS_FILE, "r") as f: data = json.load(f)
+        with open(PLUGINS_FILE, "r") as f:
+            data = json.load(f)
         if name in data:
             if isinstance(data[name], dict):
                 data[name]["toggle"] = not current_status
             else:
-                data[name] = not current_status  # Fallback for legacy format
-        with open(PLUGINS_FILE, "w") as f: json.dump(data, f, indent=4)
+                data[name] = not current_status
+        with open(PLUGINS_FILE, "w") as f:
+            json.dump(data, f, indent=4)
         os.execl(sys.executable, sys.executable, *sys.argv)
     except Exception as e:
         eprint(f"Error toggling plugin: {e}")
 
+
 def on_search(text):
     results = []
     try:
-        with open(PLUGINS_FILE, "r") as f: data = json.load(f)
-    except: return []
+        with open(PLUGINS_FILE, "r") as f:
+            data = json.load(f)
+    except:
+        return []
 
     search_term = text.lower().strip()
     for name, conf in data.items():
@@ -113,8 +175,8 @@ def on_search(text):
         is_enabled = conf.get("toggle", True) if isinstance(conf, dict) else conf
         status = "[ACTIVE]" if is_enabled else "[OFF]"
         results.append({
-            "name": f"{status} {name} (Press Enter to toggle)",
-            "score": 1500,
+            "name":   f"{status} {name} (Press Enter to toggle)",
+            "score":  1500,
             "action": lambda n=name, s=is_enabled: _toggle_plugin(n, s),
             "icon_type": "settings"
         })

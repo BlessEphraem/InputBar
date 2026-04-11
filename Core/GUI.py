@@ -37,10 +37,14 @@ class InputBarUI(QWidget):
         self.init_ui()
 
     def check_focus(self):
-        """Polls every 100ms to check whether the window still has Windows focus."""
+        """Fallback focus poll — hides the window if it lost focus.
+        Acts as a safety net for cases where changeEvent may not fire
+        (e.g. certain Qt.WindowType.Tool configurations on Windows)."""
         if not self.isVisible():
             self.focus_timer.stop()
             return
+        if not self.isActiveWindow():
+            self.hide()
 
     def init_ui(self):
         flags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool

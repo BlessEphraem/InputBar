@@ -40,7 +40,10 @@ def load_global_config():
 
 def _restart_app():
     dprint("Restarting application (Config Reload)")
-    os.execl(sys.executable, sys.executable, *sys.argv)
+    if getattr(sys, 'frozen', False):
+        os.execl(sys.executable, sys.executable)
+    else:
+        os.execl(sys.executable, sys.executable, *sys.argv)
 
 def _open_config():
     os.startfile(CONFIG_FILE)
