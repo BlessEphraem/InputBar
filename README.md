@@ -43,7 +43,20 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 - **IPC pipe** — can be triggered from external scripts (AutoHotkey, etc.)
 - **User data persistence** — updates inject new keys without overwriting existing settings
 
-## Usage
+# 🚀 Installation
+
+* ✅ **Recommended - Download the Setup / Portable version**
+  1. Choose the "setup.exe" or the "portable.zip" from the [**Releases page**](https://github.com/BlessEphraem/Premiere-Companion/releases).
+  2. Install or extract the files. The portable version is pre-packaged and ready to use out of the box.
+
+* 🛠️ **From Source - Run the `.pyw` Script**
+
+  If you prefer to run directly from source, clone this repository. Run your terminal as Administrator (required for global hotkeys and mouse simulation) and install the dependencies:
+```Bash
+pip install PyQt6 rapidfuzz keyboard pywin32
+```
+
+## 🏁 Usage
 
 | Action | Shortcut |
 |---|---|
