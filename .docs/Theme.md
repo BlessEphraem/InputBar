@@ -23,18 +23,43 @@ Then reload InputBar (`Config Reload` in the search bar, or restart the app).
 **WILL ADD PICTURE LATER, SORRY. BUT THEY ARE AVAILABLE**
 
 ### `theme_default`
+<p align="center"><img src="./medias/preview_theme_default.png"></p>
+
 ### `theme_catppuccin_latte`
+<p align="center"><img src="./medias/preview_theme_catppuccin_latte.png"></p>
+
 ### `theme_catppuccin_mocha`
+<p align="center"><img src="./medias/preview_theme_catppuccin_mocha.png"></p>
+
 ### `theme_dracula`
+<p align="center"><img src="./medias/preview_theme_dracula.png"></p>
+
 ### `theme_gruvbox`
+<p align="center"><img src="./medias/preview_theme_gruvbox.png"></p>
+
 ### `theme_high_contrast`
+<p align="center"><img src="./medias/preview_theme_high_contrast.png"></p>
+
 ### `theme_light`
+<p align="center"><img src="./medias/preview_theme_light.png"></p>
+
 ### `theme_material_palenight`
+<p align="center"><img src="./medias/preview_theme_material_palenight.png"></p>
+
 ### `theme_monokai`
+<p align="center"><img src="./medias/preview_theme_monokai.png"></p>
+
 ### `theme_nord`
+<p align="center"><img src="./medias/preview_theme_nord.png"></p>
+
 ### `theme_solarized_dark`
+<p align="center"><img src="./medias/preview_theme_solarized_dark.png"></p>
+
 ### `theme_solarized_light`
+<p align="center"><img src="./medias/preview_theme_solarized_light.png"></p>
+
 ### `theme_synthwave`
+<p align="center"><img src="./medias/preview_theme_synthwave.png"></p>
 
 ---
 
