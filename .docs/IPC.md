@@ -33,7 +33,7 @@ Ctrl+Space::{
         }
     }
     ; Fallback -> Run "InputBar.exe/.pyw"
-    Target := 'python C:\Program Files (x86)\InputBar\InputBar.exe" --show'
+    Target := 'C:\Program Files (x86)\InputBar\InputBar.exe" --show'
     try {
         Run(Target, , "Hide")
     } catch as err {
