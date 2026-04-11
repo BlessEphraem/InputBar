@@ -1,7 +1,7 @@
 <div align="center">
   <h1 style="font-size: 3em; font-weight: 500">
   
-【 𝗜𝗻𝗽𝘂𝘁𝗕𝗮𝗿 】
+【 𝗜𝗻𝗽𝘂𝘁 𝗕𝗮𝗿 】
 
   </h1>
 </div>
