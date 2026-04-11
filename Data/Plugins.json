@@ -1,0 +1,23 @@
+{
+    "Calc.py": {
+        "toggle": true,
+        "keyword": [
+            "calc",
+            "*"
+        ]
+    },
+    "System.py": {
+        "toggle": true,
+        "keyword": [
+            "system",
+            "*"
+        ]
+    },
+    "App/App.py": {
+        "toggle": true,
+        "keyword": [
+            "app",
+            "*"
+        ]
+    }
+}

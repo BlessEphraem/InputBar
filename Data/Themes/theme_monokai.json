@@ -1,0 +1,46 @@
+{
+    "window": {
+        "width": 620,
+        "height": 500,
+        "margin": 50
+    },
+    "container": {
+        "background": "rgba(39, 40, 34, 0.95)",
+        "border": "1px solid #3e3d32",
+        "border_radius": "8px",
+        "shadow_color": [0, 0, 0, 200],
+        "shadow_blur": 25,
+        "shadow_x_offset": 0,
+        "shadow_y_offset": 5,
+        "padding": 10,
+        "spacing": 8
+    },
+    "search_bar": {
+        "background": "rgba(62, 61, 50, 0.95)",
+        "text_color": "#f8f8f2",
+        "border": "1px solid #75715e",
+        "border_radius": "4px",
+        "padding": "12px",
+        "font_size": "18px",
+        "font_family": "Segoe UI",
+        "placeholder": "Search..."
+    },
+    "results_list": {
+        "background": "transparent",
+        "text_color": "#f8f8f2",
+        "selected_background": "#f92672",
+        "selected_text_color": "#f8f8f2",
+        "font_size": "15px",
+        "font_family": "Segoe UI",
+        "item_padding": "8px",
+        "item_border_radius": "4px",
+        "height": 350
+    },
+    "scrollbar": {
+        "width": "0px",
+        "background": "transparent",
+        "handle_color": "rgba(117, 113, 94, 0.6)",
+        "handle_hover_color": "rgba(117, 113, 94, 0.9)",
+        "border_radius": "3px"
+    }
+}
