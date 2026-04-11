@@ -46,7 +46,7 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 # 🚀 Installation
 
 * ✅ **Recommended - Download the Setup / Portable version**
-  1. Choose the "setup.exe" or the "portable.zip" from the [**Releases page**](https://github.com/BlessEphraem/Premiere-Companion/releases).
+  1. Choose the "setup.exe" or the "portable.zip" from the [**Releases page**](https://github.com/BlessEphraem/InputBar/releases).
   2. Install or extract the files. The portable version is pre-packaged and ready to use out of the box.
 
 * 🛠️ **From Source - Run the `.pyw` Script**
