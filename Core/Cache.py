@@ -21,10 +21,12 @@ def _do_clear_and_restart():
         eprint(f"Error clearing cache: {e}")
 
     dprint("Restarting application (Cache Clear)")
+    import subprocess
     if getattr(sys, 'frozen', False):
-        os.execl(sys.executable, sys.executable)
+        subprocess.Popen([sys.executable])
     else:
-        os.execl(sys.executable, sys.executable, *sys.argv)
+        subprocess.Popen([sys.executable] + sys.argv)
+    sys.exit(0)
 
 def on_search(text):
     global _confirm_step

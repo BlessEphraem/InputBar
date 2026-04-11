@@ -5,10 +5,10 @@
         "margin": 50
     },
     "container": {
-        "background": "rgba(46, 46, 46, 0.85)",
-        "border": "1px solid #444",
+        "background": "rgba(239, 241, 245, 0.95)",
+        "border": "1px solid #ccd0da",
         "border_radius": "8px",
-        "shadow_color": [0, 0, 0, 180],
+        "shadow_color": [0, 0, 0, 40],
         "shadow_blur": 25,
         "shadow_x_offset": 0,
         "shadow_y_offset": 5,
@@ -16,9 +16,9 @@
         "spacing": 8
     },
     "search_bar": {
-        "background": "rgba(61, 61, 61, 0.90)",
-        "text_color": "white",
-        "border": "1px solid #555",
+        "background": "rgba(204, 208, 218, 0.95)",
+        "text_color": "#4c4f69",
+        "border": "1px solid #bcc0cc",
         "border_radius": "4px",
         "padding": "12px",
         "font_size": "18px",
@@ -27,9 +27,9 @@
     },
     "results_list": {
         "background": "transparent",
-        "text_color": "#ddd",
-        "selected_background": "rgba(0, 120, 212, 1.0)",
-        "selected_text_color": "white",
+        "text_color": "#4c4f69",
+        "selected_background": "#209fb5",
+        "selected_text_color": "#eff1f5",
         "font_size": "15px",
         "font_family": "Segoe UI",
         "item_padding": "8px",
@@ -39,8 +39,8 @@
     "scrollbar": {
         "width": "0px",
         "background": "transparent",
-        "handle_color": "rgba(100, 100, 100, 0.6)",
-        "handle_hover_color": "rgba(150, 150, 150, 0.8)",
+        "handle_color": "rgba(140, 143, 161, 0.4)",
+        "handle_hover_color": "rgba(140, 143, 161, 0.7)",
         "border_radius": "3px"
     }
 }

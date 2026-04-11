@@ -39,11 +39,13 @@ def load_global_config():
         return default_config
 
 def _restart_app():
+    import subprocess
     dprint("Restarting application (Config Reload)")
     if getattr(sys, 'frozen', False):
-        os.execl(sys.executable, sys.executable)
+        subprocess.Popen([sys.executable])
     else:
-        os.execl(sys.executable, sys.executable, *sys.argv)
+        subprocess.Popen([sys.executable] + sys.argv)
+    sys.exit(0)
 
 def _open_config():
     os.startfile(CONFIG_FILE)
