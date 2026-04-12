@@ -1,5 +1,7 @@
 import re
 import os
+import ast
+import operator
 import subprocess
 
 def copy_to_clipboard(text):
@@ -15,6 +17,29 @@ def copy_to_clipboard(text):
     except Exception:
         pass
 
+_OPERATORS = {
+    ast.Add:  operator.add,
+    ast.Sub:  operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div:  operator.truediv,
+    ast.Mod:  operator.mod,
+    ast.Pow:  operator.pow,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+def _safe_eval(node):
+    if isinstance(node, ast.Expression):
+        return _safe_eval(node.body)
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        return node.value
+    if isinstance(node, ast.BinOp) and type(node.op) in _OPERATORS:
+        return _OPERATORS[type(node.op)](_safe_eval(node.left), _safe_eval(node.right))
+    if isinstance(node, ast.UnaryOp) and type(node.op) in _OPERATORS:
+        return _OPERATORS[type(node.op)](_safe_eval(node.operand))
+    raise ValueError(f"Unsupported operation: {ast.dump(node)}")
+
+
 def on_search(text):
     results = []
     query = text.strip()
@@ -27,8 +52,8 @@ def on_search(text):
             try:
                 eval_query = query.replace('^', '**')
 
-                # Safe evaluation with no access to global variables
-                result = eval(eval_query, {"__builtins__": {}}, {})
+                # Safe AST-based evaluation — no eval(), no builtins access
+                result = _safe_eval(ast.parse(eval_query, mode="eval"))
 
                 if isinstance(result, float):
                     result = round(result, 6)  # Clean up float precision
@@ -39,7 +64,7 @@ def on_search(text):
                     "action": lambda: copy_to_clipboard(str(result)),
                     "icon_type": "calc"
                 })
-            except:
+            except Exception:
                 pass
 
     return results

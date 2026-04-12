@@ -186,17 +186,27 @@ class InputBarUI(QWidget):
                 item.setData(_ROLE_ITEMTYPE, res.get("item_type"))
                 item.setData(_ROLE_EXEPATH,  res.get("exe_path"))
 
-                icon_path = res.get("icon_path")
-                if icon_path and os.path.exists(icon_path):
-                    item.setIcon(QIcon(icon_path.replace("\\", "/")))
-                elif res.get("icon_type") == "file":
-                    action_val = res.get("action", "")
-                    file_path  = action_val if isinstance(action_val, str) else ""
-                    item.setIcon(self.icon_provider.icon(QFileInfo(file_path)))
-                elif res.get("icon_type") == "calc":
-                    item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon))
-                elif res.get("icon_type") == "settings":
-                    item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogDetailedView))
+                try:
+                    icon_path = res.get("icon_path")
+                    if icon_path and os.path.exists(icon_path):
+                        item.setIcon(QIcon(icon_path.replace("\\", "/")))
+                    elif res.get("icon_type") == "file":
+                        exe_val    = res.get("exe_path") or ""
+                        action_val = res.get("action", "")
+                        file_path  = (
+                            exe_val if (exe_val and os.path.exists(exe_val))
+                            else (action_val if isinstance(action_val, str) else "")
+                        )
+                        if file_path and os.path.exists(file_path):
+                            item.setIcon(self.icon_provider.icon(QFileInfo(file_path)))
+                    elif res.get("icon_type") == "app":
+                        item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMenuButton))
+                    elif res.get("icon_type") == "calc":
+                        item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon))
+                    elif res.get("icon_type") == "settings":
+                        item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogDetailedView))
+                except Exception:
+                    pass
 
                 self.results_list.addItem(item)
             self.results_list.show()
@@ -369,7 +379,7 @@ class InputBarUI(QWidget):
             self.hide()
 
         def open_folder():
-            target = exe_path or (action if not action.startswith("explorer.exe shell:") else None)
+            target = exe_path or (action if not action.startswith("shell:appsFolder") else None)
             if not target:
                 return
             folder = os.path.dirname(target)

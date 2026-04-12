@@ -16,7 +16,7 @@
   </a>
   <img src="https://img.shields.io/badge/OS-Windows-0078D6?style=flat-square&logo=windows&logoColor=white&v=2" alt="Windows Only">
   <a href="https://github.com/BlessEphraem/InputBar/releases">
-    <img src="https://img.shields.io/github/downloads/BlessEphraem/InputBar/total?style=flat-square&color=success&v=2" alt="Downloads">
+    <img src="https://img.shields.io/github/downloads/BlessEphraem/InputBar/total?style=flat-square&color=success" alt="Downloads">
   </a>
   <a href="https://github.com/BlessEphraem/InputBar/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/BlessEphraem/InputBar?style=flat-square&v=2" alt="License">
