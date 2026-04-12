@@ -36,6 +36,7 @@ from Core.Plugins import load_all_modules
 from Core.Search import load_history
 from Core.GUI import InputBarUI
 from Core.Hotkeys import load_hotkeys, register_hotkeys, stop_hotkeys
+from Core.Updater import check_for_updates_async
 
 
 class HotkeySignal(QObject):
@@ -196,6 +197,8 @@ def main():
         tray_icon = setup_tray_icon(window, data_dir, quit_signal.trigger.emit)
     except Exception as e:
         eprint(f"Tray: QSystemTrayIcon startup failed ({e})")
+
+    check_for_updates_async()
 
     def handle_new_connection():
         client = server.nextPendingConnection()
