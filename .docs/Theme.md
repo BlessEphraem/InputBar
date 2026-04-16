@@ -1,4 +1,4 @@
-# Themes
+# 🎨 Themes
 
 <a href="Configuration.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Configuration</kbd></a>
 
@@ -19,8 +19,6 @@ Then reload InputBar (`Settings Reload` in the search bar, or restart the app).
 ---
 
 ## Available themes
-
-**WILL ADD PICTURE LATER, SORRY. BUT THEY ARE AVAILABLE**
 
 ### `theme_default`
 <p align="center"><img src="./medias/preview_theme_default.png"></p>
@@ -78,7 +76,7 @@ Custom themes are never overwritten by updates.
 | Key | Type | Description |
 |---|---|---|
 | `width`  | int | Total window width in pixels |
-| `height` | int | Total window height in pixels |
+| `height` | int | **Search bar height** in pixels (window grows dynamically) |
 | `margin` | int | Outer margin around the container |
 
 #### `container`
@@ -104,6 +102,7 @@ Custom themes are never overwritten by updates.
 | `padding`      | CSS value | Internal padding of the input |
 | `font_size`    | CSS value | Font size of the input text |
 | `font_family`  | string    | Font family of the input text |
+| `font_weight`  | int       | Font weight (e.g., 400 for Normal, 700 for Bold) |
 | `placeholder`  | string    | Placeholder text when empty |
 
 #### `results_list`
@@ -115,9 +114,16 @@ Custom themes are never overwritten by updates.
 | `selected_text_color` | CSS color | Selected item text color |
 | `font_size`           | CSS value | Font size of list items |
 | `font_family`         | string    | Font family of list items |
+| `font_weight`         | int       | Font weight of items |
 | `item_padding`        | CSS value | Padding inside each item |
 | `item_border_radius`  | CSS value | Corner rounding of each item |
-| `height`              | int       | Fixed height of the results list in pixels |
+| `height`              | int       | **Height of a single item** in pixels |
+| `MaxItemToShow`       | int       | Max visible items before scrolling |
+| `icon_size`           | int       | Size of result icons in pixels |
+| `line_spacing`        | int       | Vertical gap between title and subtitle |
+| `subtitle_opacity`    | int       | Opacity of the second line (0-255) |
+| `subtitle_font_ratio` | float     | Font size scale for the second line (e.g., 0.8) |
+| `subtitle_font_weight`| int       | Font weight for the second line |
 
 #### `scrollbar`
 | Key | Type | Description |
@@ -128,6 +134,22 @@ Custom themes are never overwritten by updates.
 | `handle_hover_color`| CSS color | Scrollbar handle color on hover |
 | `border_radius`     | CSS value | Scrollbar handle corner rounding |
 
+#### `icons`
+Allows tinting specific system icons to match the theme.
+| Key | Type | Description |
+|---|---|---|
+| `arrow_down` | CSS color | Down arrow icon color |
+| `arrow_left` | CSS color | Left arrow icon color |
+| `arrow_right`| CSS color | Right arrow icon color |
+| `arrow_up`   | CSS color | Up arrow icon color |
+| `admin`      | CSS color | Admin shield icon color |
+| `folder`     | CSS color | Folder icon color |
+| `plugin`     | CSS color | General plugin icon color |
+| `settings`   | CSS color | Settings/Config icon color |
+| `shell`      | CSS color | Terminal icon color |
+| `system`     | CSS color | System command icon color |
+
 ---
 
 Colors accept any valid CSS format: `rgba(R, G, B, A)`, `#RRGGBB`, `#RGB`, or named colors (`white`, `transparent`, etc.).
+Poids de police (weights) values follow standard CSS naming: `100` (Thin), `400` (Normal), `700` (Bold), `900` (Black).

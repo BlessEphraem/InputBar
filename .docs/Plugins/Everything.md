@@ -2,133 +2,100 @@
 
 <a href="../Plugins.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Back to Plugins</kbd></a>
 
-Use Everything to search files/folders on your computer.
-<p style="font-weight: bold; color: red">⚠️ Everything not included, it must be installed. </a>
+Search for files and folders on your computer instantly using the **[Everything](https://www.voidtools.com/)** search engine integration.
 
-> **Keywords:** `f` - [Edit in `Plugins.json`](../Plugins.md)
+<p style="font-weight: bold; color: #ff6b6b">⚠️ Important: Everything must be installed on your computer for this plugin to work.</p>
 
-> **Exceptions:** Everything can be triggered when filepath or extension ar. (E,g. ``image.png``, ``bloc.txt``, ``C:\``..) See more in `Everything/extensions.data`
+## 🚀 How it Works
 
-## 📜 Everything Path - `EverythingPath.json`
+The plugin uses the **Everything SDK (DLL)** for optimal performance and real-time searching. Results are displayed incrementally without freezing the application.
 
+> **Keywords (Strict):** `f` or `everything` - [Edit in `Plugins.json`](../Plugins.md)
+>
+> **Auto-detection (Global):** The plugin triggers automatically if your search looks like a path or a file (e.g., `image.png`, `C:\`, `.pdf`). Requires the `"*"` keyword in your configuration.
+
+## 📁 Configuration (`Data/Plugins/Everything/`)
+
+### 1. 📜 `EverythingPath.json`
+Defines the path to the `Everything.exe` executable. The plugin attempts to auto-detect it on the first run.
 ```json
 {
     "EverythingPath": "C:\\Program Files\\Everything\\Everything.exe"
 }
 ```
 
-## 📜 Extensions - `extensions.data`
+### 2. 📜 `extensions.data`
+List of extensions that automatically trigger an Everything search in global mode.
+- One extension per line (e.g., `.png`).
+- Lines starting with `#` are ignored.
 
+### 3. ⭐ `favorites.data`
+
+Create named shortcuts for your frequent folders or files.
 ```data
-    # Everything Plugin — Extensions
-    # Extensions listed here trigger a file search automatically when typed in InputBar.
-    # One extension per line. Lines starting with '#' are ignored.
-    # Warning: You must add "*" as a keyword for the Everything plugin in `Plugins.json` for this feature to work.
-
-    # Documents
-    .pdf
-    .doc
-    .docx
-    .txt
-    .rtf
-    .odt
-    .md
-    .csv
-    .xls
-    .xlsx
-    .ppt
-    .pptx
-
-    # Images
-    .png
-    .jpg
-    .jpeg
-    .gif
-    .svg
-    .webp
-    .bmp
-    .ico
-    .tiff
-
-    # Videos
-    .mp4
-    .mkv
-    .avi
-    .mov
-    .wmv
-    .webm
-    .flv
-
-    # Audio
-    .mp3
-    .wav
-    .flac
-    .ogg
-    .m4a
-    .aac
-
-    # Archives
-    .zip
-    .rar
-    .7z
-    .tar
-    .gz
-    .iso
-
-    # Code & Web
-    .json
-    .xml
-    .html
-    .css
-    .js
-    .ts
-    .py
-    .java
-    .cpp
-    .c
-    .cs
-    .php
-    .sql
-    .yml
-    .yaml
-
-    # System & Scripts
-    .exe
-    .msi
-    .bat
-    .cmd
-    .ps1
-    .sh
-    .ini
-    .cfg
-    .dll
-    .lnk
+# Format: name=path
+Projects=D:\Dev\CurrentProjects
+Documents=C:\Users\Name\Documents
 ```
+- Searching favorites is **fuzzy**: typing `proj` will find `Projects`.
 
-## ⭐ Favorites - `favorites.data`
+## 🔍 Smart Trigger Rules
 
-Define named folders/files for fast search.
+To avoid cluttering your regular searches, Everything only activates in global mode if:
+1. The search contains a path separator (`\` or `/`).
+2. The search starts with a drive letter (e.g., `C:`).
+3. The search ends with an extension defined in `extensions.data`.
+
+*Note: Adding the `*` prefix inside the [`Plugins.json`](../Plugins.md) forces an Everything search in all cases, but it will only trigger if one of these rules is met. This prevents Everything from activating unintentionally, such as when you search for Chrome.*
+
+## 💡 Tips & Tricks
+
+- **Two-Line Rendering:** Results display the file name in bold and the parent folder right below it to help you locate the file.
+- **Long Paths:** If a path is too long, it is intelligently shortened (e.g., `C:\Users\...\Documents`).
+- **Reloading:** Type `reload` or `rebuild` in the InputBar (when the plugin is active) to instantly refresh your favorites and extensions without restarting.
+- **Auto-launch:** If Everything is not running, the plugin will attempt to start it silently in the background.
+
+## 📖 Examples & Combinations
+
+The power of the Everything plugin lies in how you combine keywords, paths, and extensions.
 
 ```
-# favorites.data
-
-# Format: key=file/folder path
-#   key              — the name you search for in InputBar
-#   file/folder path — the file/folder path to run/search in
-MyFolder=Z:\Random\User\Path
+f project_report
+# Search for any file/folder containing "project_report" everywhere using the default "f" keyword.
 ```
 
-- Lines starting with `#` are comments and are ignored.
-- Keys are case-insensitive.
-- Search is fuzzy: typing `fast` will match `fastfetch`.
+```
+.png
+# List all recently modified `.png` files on your PC (triggers via `extensions.data`).
+```
 
-### Detection rules
+```
+D:/Movies .mkv
+# List the contents of your Downloads folder instantly..
+```
 
-An input is recognized as a Everything command if it matches any of these conditions:
+```
+wallpapers .jpg
+# If `wallpapers` is a favorite, searches for `.jpg` files inside that folder.
+```
 
-| Rule | Example |
-|---|---|
-| Contains a backslash `\` | `C:\tools\mytool.exe` |
-| Contains a forward slash `/` | `./myscript.sh` |
-| Extensions file (see `extensions.data`) | .mp4, .png, .ico.. |
+```
+work report .pdf
+# Filters your "work" folder (favorite) for PDF files containing "report".
+```
 
+```
+f *.txt
+# Standard Everything syntax: find all text files.
+```
+
+```
+f size:>1gb
+# Advanced Everything syntax: find all files larger than 1GB.
+```
+
+```
+f dc:today
+# Advanced Everything syntax: find all files created today.
+```
+> **Pro Tip:** You can use any [advanced search syntax supported by Everything](https://www.voidtools.com/support/everything/searching/) !
