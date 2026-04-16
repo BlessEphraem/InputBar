@@ -15,12 +15,15 @@ IS_CLI_MODE = bool(args.search)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR   = os.path.abspath(args.config) if args.config else SCRIPT_DIR
-CACHE_DIR  = os.path.join(BASE_DIR, "Data", "__pycache__")
 
-if not os.path.exists(CACHE_DIR):
-    try: os.makedirs(CACHE_DIR)
-    except: pass
-sys.pycache_prefix = os.path.abspath(CACHE_DIR)
+# Redirect .pyc cache to Data/__pycache__ in dev mode only.
+# In frozen mode PyInstaller has already compiled everything — no .pyc generated.
+if not getattr(sys, 'frozen', False):
+    CACHE_DIR = os.path.join(BASE_DIR, "Data", "__pycache__")
+    if not os.path.exists(CACHE_DIR):
+        try: os.makedirs(CACHE_DIR)
+        except: pass
+    sys.pycache_prefix = os.path.abspath(CACHE_DIR)
 
 # --- IMPORT MODULES AFTER CACHE IS SET UP ---
 from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
@@ -30,7 +33,8 @@ from PyQt6.QtNetwork import QLocalServer, QLocalSocket
 
 import Core.Paths as Paths
 from Core.Logging import dprint, eprint
-from Core.Config import load_global_config
+from Core.Migrations import run_migrations
+from Core.Settings import load_global_config
 from Core.Theme import load_theme, sync_builtin_themes
 from Core.Plugins import load_all_modules
 from Core.Search import load_history
@@ -172,11 +176,12 @@ def main():
     server.removeServer("InputBar_Singleton_Lock")
     server.listen("InputBar_Singleton_Lock")
 
-    global_config = load_global_config()
+    run_migrations()
+    global_config  = load_global_config()
     sync_builtin_themes()
-    theme         = load_theme(global_config.get("Theme", "theme_default"))
+    theme          = load_theme(global_config.get("Theme", "theme_default"))
     load_history()
-    plugins       = load_all_modules()
+    plugins        = load_all_modules()
     hotkeys_config = load_hotkeys()
 
     window = InputBarUI(global_config, theme, plugins)
@@ -186,11 +191,7 @@ def main():
     quit_signal = QuitSignal()
     quit_signal.trigger.connect(lambda: (stop_hotkeys(), app.quit()))
 
-    data_dir = (
-        os.path.join(os.path.dirname(sys.executable), 'Data')
-        if getattr(sys, 'frozen', False)
-        else os.path.join(SCRIPT_DIR, 'Data')
-    )
+    data_dir = Paths.DATA_DIR
 
     tray_icon = None
     try:

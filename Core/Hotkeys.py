@@ -4,7 +4,7 @@ import json
 import subprocess
 import threading
 
-from Core.Paths import DATA_DIR, CONFIG_FILE
+from Core.Paths import DATA_DIR, SETTINGS_FILE
 from Core.Logging import dprint, eprint
 
 HOTKEYS_FILE = os.path.join(DATA_DIR, "hotkeys.json")
@@ -126,22 +126,22 @@ _hook_thread = None  # stdout reader thread
 
 def _migrate_from_config() -> str | None:
     """
-    If Config.json still contains a 'hotkey' key, migrate it to hotkeys.json
-    and remove it from Config.json.
+    If Settings.json still contains a legacy 'hotkey' key, migrate it to
+    hotkeys.json and remove it from Settings.json.
     """
-    if not os.path.exists(CONFIG_FILE):
+    if not os.path.exists(SETTINGS_FILE):
         return None
     try:
-        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
             cfg = json.load(f)
         hotkey = cfg.pop("hotkey", None)
         if hotkey is not None:
-            with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
                 json.dump(cfg, f, indent=4)
-            dprint(f"Hotkeys: 'hotkey' key migrated from Config.json → '{hotkey}'")
+            dprint(f"Hotkeys: 'hotkey' key migrated from Settings.json → '{hotkey}'")
             return hotkey
     except Exception as e:
-        eprint(f"Hotkeys: Config.json migration error ({e})")
+        eprint(f"Hotkeys: Settings.json migration error ({e})")
     return None
 
 

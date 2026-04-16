@@ -1,0 +1,11 @@
+# Everything Plugin — Favorites
+# Define named shortcuts to files or folders for fast access.
+#
+# Format:  key=file or folder path
+#   key   — the name you type in InputBar (case-insensitive, fuzzy)
+#   path  — the file or folder to open
+#
+# Examples:
+# Desktop=C:\Users\YourName\Desktop
+# Downloads=C:\Users\YourName\Downloads
+# Projects=D:\Dev\Projects

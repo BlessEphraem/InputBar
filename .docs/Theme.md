@@ -1,12 +1,12 @@
 # Themes
 
-<a href="Configuration.md"><kbd>← Go back to Configuration page</kbd></a>
+<a href="Configuration.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Configuration</kbd></a>
 
 Themes control the full visual appearance of InputBar. They are stored as `.json` files in `Data/Themes/`.
 
 ## Switching themes
 
-Open `Data/Config.json` and set the `"Theme"` key to the filename of the theme you want, **without** the `.json` extension:
+Open `Data/Settings.json` and set the `"Theme"` key to the filename of the theme you want, **without** the `.json` extension:
 
 ```json
 {
@@ -14,7 +14,7 @@ Open `Data/Config.json` and set the `"Theme"` key to the filename of the theme y
 }
 ```
 
-Then reload InputBar (`Config Reload` in the search bar, or restart the app).
+Then reload InputBar (`Settings Reload` in the search bar, or restart the app).
 
 ---
 
@@ -67,7 +67,7 @@ Then reload InputBar (`Config Reload` in the search bar, or restart the app).
 
 1. Copy any existing theme from `Data/Themes/` and rename it (e.g. `mytheme.json`).
 2. Edit the values to your liking — see the key reference below.
-3. Set `"Theme": "mytheme"` in `Config.json` and reload.
+3. Set `"Theme": "mytheme"` in `Data/Settings.json` and reload.
 
 Any key you omit will automatically fall back to its default value on next startup.
 Custom themes are never overwritten by updates.

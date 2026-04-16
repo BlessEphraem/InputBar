@@ -32,7 +32,7 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 
 ---
 
-## ✨ Features
+# ✨ Features
 
 - **App search** — fuzzy search across all installed apps (Start Menu, LOCALAPPDATA, Windows registry, UWP/Store)
 - **Built-in calculator** — type `2 + 2`, the result appears and copies to clipboard
@@ -53,10 +53,10 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 
   If you prefer to run directly from source, clone this repository. Run your terminal as Administrator (required for global hotkeys and mouse simulation) and install the dependencies:
 ```Bash
-pip install PyQt6 rapidfuzz keyboard pywin32
+pip install PyQt6 rapidfuzz pywin32
 ```
 
-## 🏁 Usage
+# ♟️ How to use
 
 | Action | Shortcut |
 |---|---|
@@ -67,48 +67,60 @@ pip install PyQt6 rapidfuzz keyboard pywin32
 | Go back | `←` or select "Back" |
 | Close InputBar | `Escape` |
 
-### App submenu (`→`)
+# ⚙️ Configuration
+To keep the program as lightweight as possible, it does not include a Graphical User Interface (GUI). Instead, everything is managed through simple .json configuration files.
 
-When an application is selected, pressing the right arrow shows:
+Don't worry if you're not a developer - configuring the app is straightforward! I've written detailed guides to walk you through the process step by step.
 
-```
-▶  Start as admin     → Launch with UAC elevation
-   Open folder        → Open install folder in Explorer
-←  Back               → Return to search (state preserved)
-```
+<a href=".docs/Configuration.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Configuration Documentation</kbd></a>
 
-### Calculator
+## 🧩 App
 
-Type any math expression directly. If InputBar recognizes it, the result appears at the top. Press `Enter` to copy it to the clipboard.
+Just start typing — InputBar fuzzy-searches all your installed apps instantly.
 
 ```
-2 + 2         →  = 4
+chrome    →  Google Chrome
+vsc       →  Visual Studio Code  (via alias)
+```
+
+Press `→` on any result to access **Start as admin** or **Open folder**.
+
+<a href=".docs/Plugins/App.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ App Documentation</kbd></a>
+
+## 🧩 Calc
+
+Type any math expression. The result appears at the top — press `Enter` to copy it.
+
+```
 (10 * 3) / 4  →  = 7.5
 2 ^ 8         →  = 256
 ```
 
-### System commands
+<a href=".docs/Plugins/Calc.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Calc Documentation</kbd></a>
 
-Type `system` to list all available commands, or type directly what you need:
+## 🧩 System
 
-| Term | Action |
-|---|---|
-| `lock` | Lock the session |
-| `sleep` | Sleep |
-| `restart` / `reboot` | Restart |
-| `shutdown` | Shut down |
+Type `system` or the command name directly. A confirmation is always required before execution.
 
-A confirmation step is always required before any system command is executed.
+```
+lock      →  Lock the session
+restart   →  Restart the PC
+shutdown  →  Shut down
+```
 
-### Plugin management
+<a href=".docs/Plugins/System.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ System Documentation</kbd></a>
 
-Type `plugin` or `core` to list all loaded modules and toggle them on/off.
+## 🧩 Shell
 
+Type `shell` to list your saved shortcuts, or run commands directly from InputBar.
 
-# ⚙️ Configuration
-To keep the program as lightweight as possible, it does not include a Graphical User Interface (GUI). Instead, everything is managed through simple .json configuration files.
+```
+shell fastfetch       →  runs your "fastfetch" shortcut
+git status            →  opens a terminal and runs git status
+python C:\script.py   →  runs the script in a new window
+```
 
-Don't worry if you're not a developer - configuring the app is straightforward! I've written detailed guides to walk you through the process step by step. [Please check out there to get started.](.docs/Configuration.md)
+<a href=".docs/Plugins/Shell.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Shell Documentation</kbd></a>
 
 ---
 
@@ -116,8 +128,7 @@ Don't worry if you're not a developer - configuring the app is straightforward! 
 - Python 3.11+
 - PyQt6
 - rapidfuzz
-- keyboard
-- pywin32  (optional — .lnk shortcut resolution)
+- pywin32  (optional — .lnk shortcut resolution + exe icon extraction)
 
 # 📄 License
 

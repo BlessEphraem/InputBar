@@ -1,6 +1,6 @@
 # Hotkeys.json
 
-<a href="Configuration.md"><kbd>← Go back to Configuration page</kbd></a>
+<a href="Configuration.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Configuration</kbd></a>
 
 A huge shout-out to my friend [@vlad-samp](https://github.com/vlad-samp).
 Without him, implementing a low-level hook to intercept the Windows key wouldn't have been possible.
@@ -70,7 +70,7 @@ These are the keys you hold while pressing another.
 
 ---
 
-#### Regular keys
+### Regular keys
 
 Combine these with a modifier, or use them alone.
 
@@ -146,7 +146,7 @@ f13 f14 f15 f16 f17 f18 f19 f20
 
 ---
 
-#### Recommended shortcuts
+### Recommended shortcuts
 
 | Shortcut | Notes |
 |---|---|
@@ -156,5 +156,3 @@ f13 f14 f15 f16 f17 f18 f19 f20
 | `f13` | Silent and conflict-free on extended keyboards |
 | `win` | Replaces the Start Menu entirely |
 | `lwin+space` | Windows key + Space — natural feel |
-
----

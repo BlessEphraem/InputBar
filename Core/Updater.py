@@ -118,7 +118,7 @@ def check_for_updates_async() -> None:
     Safe to call even if _version.py does not exist (dev mode without a build).
     """
     try:
-        from Core._version import APP_VERSION, GITHUB_REPO
+        from Build._version import APP_VERSION, GITHUB_REPO
     except ImportError:
         dprint("Updater: _version.py not found (dev mode), skipping update check")
         return

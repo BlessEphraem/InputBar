@@ -41,7 +41,7 @@ def on_search(text):
 
     if _confirm_step:
         results.append({
-            "name": "⚠️ Confirm cache deletion? (Press Enter to confirm)",
+            "name": "Confirm cache deletion? (Press Enter to confirm)",
             "score": 5000,
             "action": _do_clear_and_restart,
             "icon_type": "settings"
@@ -50,7 +50,7 @@ def on_search(text):
 
     if not query or "clear" in query:
         results.append({
-            "name": "🧹 Cache Clear (Delete temporary files)",
+            "name": "Cache Clear (Delete temporary files)",
             "score": 2000,
             "action": _request_confirm,
             "icon_type": "settings"

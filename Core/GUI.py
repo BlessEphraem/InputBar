@@ -4,18 +4,173 @@ import ctypes
 import subprocess
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLineEdit,
                              QListWidget, QListWidgetItem, QGraphicsDropShadowEffect,
-                             QFrame, QFileIconProvider, QStyle, QApplication)
-from PyQt6.QtCore import Qt, QEvent, QFileInfo, QSize, QTimer
-from PyQt6.QtGui import QCursor, QColor, QIcon
+                             QFrame, QFileIconProvider, QStyle, QApplication, QStyledItemDelegate,
+                             QStyleOptionViewItem)
+from PyQt6.QtCore import Qt, QEvent, QFileInfo, QSize, QTimer, QRect
+from PyQt6.QtGui import QCursor, QColor, QIcon, QFont, QPainter, QFontMetrics
 
 from Core.Paths import IS_CLI_MODE
 from Core.Search import process_search, save_to_history
 from Core.Logging import eprint
+from Core.Icons import load_svg_icon
 
 # Custom UserRole constants for list items
 _ROLE_ACTION   = Qt.ItemDataRole.UserRole       # callable action or file path
 _ROLE_ITEMTYPE = Qt.ItemDataRole.UserRole + 1   # "app" | None
 _ROLE_EXEPATH  = Qt.ItemDataRole.UserRole + 2   # resolved exe path (may be None)
+_ROLE_SUBTITLE = Qt.ItemDataRole.UserRole + 3   # Second line info (e.g. path)
+
+
+class ResultItemDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None, theme=None):
+        super().__init__(parent)
+        self.theme = theme or {}
+
+    def _parse_color(self, color_val, default_hex="#0078D4"):
+        """Helper to parse list [R,G,B,A] or string 'rgba(R,G,B,A)' into QColor."""
+        if isinstance(color_val, list) and len(color_val) >= 3:
+            a = color_val[3] if len(color_val) > 3 else 255
+            return QColor(color_val[0], color_val[1], color_val[2], a)
+        
+        if isinstance(color_val, str):
+            color_val = color_val.strip()
+            if color_val.startswith("rgba"):
+                try:
+                    import re
+                    m = re.findall(r"(\d+\.?\d*)", color_val)
+                    if len(m) >= 4:
+                        return QColor(int(m[0]), int(m[1]), int(m[2]), int(float(m[3]) * 255))
+                except Exception: pass
+            elif color_val.startswith("rgb"):
+                try:
+                    import re
+                    m = re.findall(r"(\d+)", color_val)
+                    if len(m) >= 3:
+                        return QColor(int(m[0]), int(m[1]), int(m[2]))
+                except Exception: pass
+            
+            # Try to let QColor handle hex or named colors
+            c = QColor(color_val)
+            if c.isValid():
+                return c
+        
+        return QColor(default_hex)
+
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index):
+        painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        r_cfg = self.theme.get("results_list", {})
+        
+        # Draw background (handles hover/selected)
+        if option.state & QStyle.StateFlag.State_Selected:
+            bg_color = self._parse_color(r_cfg.get('selected_background', 'rgba(0, 120, 212, 1.0)'))
+            painter.fillRect(option.rect, bg_color)
+        
+        # Get data
+        name     = index.data(Qt.ItemDataRole.DisplayRole)
+        subtitle = index.data(_ROLE_SUBTITLE)
+        icon     = index.data(Qt.ItemDataRole.DecorationRole)
+
+        padding = int(str(r_cfg.get('item_padding', '8px')).replace("px", ""))
+        rect = option.rect
+        
+        # Draw Icon
+        icon_size = int(r_cfg.get('icon_size', 24))
+        if icon:
+            icon_rect = QRect(rect.left() + padding, rect.top() + (rect.height() - icon_size) // 2, icon_size, icon_size)
+            icon.paint(painter, icon_rect)
+        
+        # Text areas
+        text_x = rect.left() + padding + icon_size + padding
+        available_width = rect.width() - text_x - padding
+        
+        if option.state & QStyle.StateFlag.State_Selected:
+            text_color = self._parse_color(r_cfg.get('selected_text_color', 'white'), 'white')
+        else:
+            text_color = self._parse_color(r_cfg.get('text_color', '#ddd'), '#ddd')
+        
+        # Setup Font from theme
+        font_family = r_cfg.get("font_family", "Segoe UI")
+        theme_size_str = str(r_cfg.get("font_size", "15px")).replace("px", "")
+        try:
+            theme_size = int(theme_size_str)
+        except Exception:
+            theme_size = 15
+            
+        base_font = QFont(font_family)
+        painter.setPen(text_color)
+        
+        if subtitle:
+            sub_ratio  = float(r_cfg.get('subtitle_font_ratio', 1.0))
+            line_space = int(r_cfg.get('line_spacing', 0))
+
+            title_font = QFont(base_font)
+            title_font.setPixelSize(theme_size)
+            title_fm   = QFontMetrics(title_font)
+            title_h    = title_fm.height()   # actual rendered height, not pixelSize
+
+            sub_font = QFont(base_font)
+            sub_font.setPixelSize(max(1, int(theme_size * sub_ratio)))
+            sub_fm   = QFontMetrics(sub_font)
+            sub_h    = sub_fm.height()
+
+            total_text_h = title_h + line_space + sub_h
+            start_y = rect.top() + (rect.height() - total_text_h) // 2
+
+            # Title
+            painter.setFont(title_font)
+            title_rect = QRect(text_x, start_y, available_width, title_h)
+            painter.drawText(title_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, name)
+
+            # Subtitle
+            painter.setFont(sub_font)
+            sub_color = QColor(text_color)
+            sub_color.setAlpha(int(r_cfg.get('subtitle_opacity', 160)))
+            painter.setPen(sub_color)
+            sub_rect  = QRect(text_x, start_y + title_h + line_space, available_width, sub_h)
+            short_sub = self.shorten_path(subtitle, painter, available_width)
+            painter.drawText(sub_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, short_sub)
+        else:
+            # Single line mode: full theme size
+            base_font.setPixelSize(theme_size)
+            painter.setFont(base_font)
+            title_rect = QRect(text_x, rect.top(), available_width, rect.height())
+            painter.drawText(title_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, name)
+
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        r      = self.theme.get("results_list", {})
+        base_h = int(r.get("height", 36))
+
+        return QSize(option.rect.width(), base_h)
+
+    def shorten_path(self, path, painter, width):
+        r"""Intelligent path elision: C:\Users\...\folder"""
+        metrics = painter.fontMetrics()
+        if metrics.horizontalAdvance(path) <= width:
+            return path
+        
+        # Basic elision if path is not really a path
+        if "\\" not in path and "/" not in path:
+            return metrics.elidedText(path, Qt.TextElideMode.ElideMiddle, width)
+
+        # Path-aware elision
+        parts = path.replace("/", "\\").split("\\")
+        if len(parts) < 3:
+            return metrics.elidedText(path, Qt.TextElideMode.ElideMiddle, width)
+            
+        start = parts[0] + "\\" + parts[1]
+        end = parts[-1]
+        
+        # Try to build with ellipsis
+        for i in range(2, len(parts) - 1):
+             candidate = f"{start}\\...\\{'\\'.join(parts[i:])}"
+             if metrics.horizontalAdvance(candidate) <= width:
+                 return candidate
+        
+        return f"{start}\\...\\{end}"
 
 
 class InputBarUI(QWidget):
@@ -27,14 +182,31 @@ class InputBarUI(QWidget):
         self.cli_mode = IS_CLI_MODE
         self.action_executed = False
         self.icon_provider   = QFileIconProvider()
-        # App sub-menu state (right arrow)
-        # None = normal mode; dict = {"saved_query", "action", "exe_path", "app_name"}
+        self._search_id = 0
+        # File/app sub-menu state (right arrow)
+        # None = normal mode; dict = {"saved_query", "action", "exe_path", "item_name", "item_type"}
         self._submenu_state = None
 
         self.focus_timer = QTimer(self)
         self.focus_timer.timeout.connect(self.check_focus)
 
         self.init_ui()
+        QTimer.singleShot(200, self._run_startup)
+
+    def _run_startup(self):
+        self.search_bar.setPlaceholderText("Loading...")
+        self.show_input_bar()
+        QTimer.singleShot(50, self._warmup_and_clear)
+
+    def _warmup_and_clear(self):
+        # Full warmup on a visible window so Qt computes real layout/icons
+        self.update_results_ui("a")
+        self.results_list.hide()
+        self.results_list.clear()
+        self.search_bar.clear()
+        s = self.theme.get("search_bar", {})
+        self.search_bar.setPlaceholderText(s.get("placeholder", "Search..."))
+        self.search_bar.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
 
     def check_focus(self):
         """Fallback focus poll — hides the window if it lost focus.
@@ -57,43 +229,50 @@ class InputBarUI(QWidget):
 
         w_cfg  = self.theme.get("window", {})
         win_w  = int(w_cfg.get("width",  620))
-        win_h  = int(w_cfg.get("height", 500))
-        margin = int(w_cfg.get("margin", 50))
-        self.setFixedSize(win_w, win_h)
+        # win_h is now the search bar height
+        self.bar_h = int(w_cfg.get("height", 50))
+        self.margin = int(w_cfg.get("margin", 50))
+        
+        self.setFixedWidth(win_w)
+        # Initial height: margin * 2 + padding * 2 + bar_h
+        c_cfg = self.theme.get("container", {})
+        self.container_padding = int(c_cfg.get("padding", 10))
+        self.container_spacing = int(c_cfg.get("spacing", 8))
+        
+        initial_h = (self.margin * 2) + (self.container_padding * 2) + self.bar_h
+        self.setFixedHeight(initial_h)
 
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(margin, margin, margin, margin)
+        self.main_layout.setContentsMargins(self.margin, self.margin, self.margin, self.margin)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-        c = self.theme.get("container", {})
 
         self.container = QFrame()
         self.container.setObjectName("Container")
         self.container.setStyleSheet(f"""
             QFrame#Container {{
-                background-color: {c.get('background', 'rgba(46, 46, 46, 0.85)')};
-                border: {c.get('border', 'none')};
-                border-radius: {c.get('border_radius', '0px')};
+                background-color: {c_cfg.get('background', 'rgba(46, 46, 46, 0.85)')};
+                border: {c_cfg.get('border', 'none')};
+                border-radius: {c_cfg.get('border_radius', '0px')};
             }}
         """)
 
         shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(int(c.get("shadow_blur",     25)))
-        shadow.setXOffset(  int(c.get("shadow_x_offset",  0)))
-        shadow.setYOffset(  int(c.get("shadow_y_offset",  5)))
-        sc = c.get("shadow_color", [0, 0, 0, 180])
+        shadow.setBlurRadius(int(c_cfg.get("shadow_blur",     25)))
+        shadow.setXOffset(  int(c_cfg.get("shadow_x_offset",  0)))
+        shadow.setYOffset(  int(c_cfg.get("shadow_y_offset",  5)))
+        sc = c_cfg.get("shadow_color", [0, 0, 0, 180])
         shadow.setColor(QColor(sc[0], sc[1], sc[2], sc[3]))
         self.container.setGraphicsEffect(shadow)
 
-        padding = int(c.get("padding", 10))
         self.inner_layout = QVBoxLayout(self.container)
-        self.inner_layout.setContentsMargins(padding, padding, padding, padding)
-        self.inner_layout.setSpacing(int(c.get("spacing", 8)))
+        self.inner_layout.setContentsMargins(self.container_padding, self.container_padding, self.container_padding, self.container_padding)
+        self.inner_layout.setSpacing(self.container_spacing)
 
         s = self.theme.get("search_bar", {})
 
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText(s.get("placeholder", "Search..."))
+        self.search_bar.setFixedHeight(self.bar_h)
         self.search_bar.setStyleSheet(f"""
             QLineEdit {{
                 background-color: {s.get('background', 'rgba(61, 61, 61, 0.90)')};
@@ -113,6 +292,8 @@ class InputBarUI(QWidget):
 
         self.results_list = QListWidget()
         self.results_list.setIconSize(QSize(24, 24))
+        self.results_list.setSpacing(0)
+        self.results_list.setItemDelegate(ResultItemDelegate(self.results_list, self.theme))
         self.results_list.setStyleSheet(f"""
             QListWidget {{
                 background-color: {r.get('background', 'transparent')};
@@ -123,7 +304,7 @@ class InputBarUI(QWidget):
                 outline: none;
             }}
             QListWidget::item {{
-                padding: {r.get('item_padding', '8px')};
+                padding: 0px;
                 border-radius: {r.get('item_border_radius', '4px')};
             }}
             QListWidget::item:selected {{
@@ -150,7 +331,6 @@ class InputBarUI(QWidget):
                 background: transparent;
             }}
         """)
-        self.results_list.setFixedHeight(int(r.get("height", 350)))
         self.results_list.hide()
         self.inner_layout.addWidget(self.results_list)
 
@@ -163,56 +343,102 @@ class InputBarUI(QWidget):
         self.hide()
 
     def update_results_ui(self, text):
+        self._search_id += 1
+        current_search_id = self._search_id
+
         if not text.strip():
             self.results_list.hide()
             self.results_list.clear()
             return
 
         self.results_list.clear()
-        all_results = process_search(text, self.plugins)
 
         # Enforce ListMax cap
         list_max = self.config.get("ListMax", 200)
         try:
             list_max = max(0, min(int(list_max), 200))
-        except:
+        except Exception:
             list_max = 200
 
-        if all_results:
-            all_results = all_results[:list_max]
-            for res in all_results:
-                item = QListWidgetItem(res["name"])
-                item.setData(_ROLE_ACTION,   res["action"])
-                item.setData(_ROLE_ITEMTYPE, res.get("item_type"))
-                item.setData(_ROLE_EXEPATH,  res.get("exe_path"))
+        result_generator = process_search(text, self.plugins)
 
-                try:
-                    icon_path = res.get("icon_path")
-                    if icon_path and os.path.exists(icon_path):
-                        item.setIcon(QIcon(icon_path.replace("\\", "/")))
-                    elif res.get("icon_type") == "file":
-                        exe_val    = res.get("exe_path") or ""
-                        action_val = res.get("action", "")
-                        file_path  = (
-                            exe_val if (exe_val and os.path.exists(exe_val))
-                            else (action_val if isinstance(action_val, str) else "")
-                        )
-                        if file_path and os.path.exists(file_path):
-                            item.setIcon(self.icon_provider.icon(QFileInfo(file_path)))
-                    elif res.get("icon_type") == "app":
-                        item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMenuButton))
-                    elif res.get("icon_type") == "calc":
-                        item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon))
-                    elif res.get("icon_type") == "settings":
-                        item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogDetailedView))
-                except Exception:
-                    pass
+        has_items = False
+        count = 0
 
-                self.results_list.addItem(item)
+        for res in result_generator:
+            if self._search_id != current_search_id:
+                return  # Abort if user typed something new
+
+            if count >= list_max:
+                break
+
+            item = QListWidgetItem(res["name"])
+            item.setData(_ROLE_ACTION,   res["action"])
+            item.setData(_ROLE_ITEMTYPE, res.get("item_type"))
+            item.setData(_ROLE_EXEPATH,  res.get("exe_path"))
+            item.setData(_ROLE_SUBTITLE, res.get("subtitle"))
+
+            try:
+                icon_path = res.get("icon_path")
+                if icon_path and os.path.exists(icon_path):
+                    item.setIcon(QIcon(icon_path.replace("\\", "/")))
+                elif res.get("icon_type") == "file":
+                    exe_val    = res.get("exe_path") or ""
+                    action_val = res.get("action", "")
+                    file_path  = (
+                        exe_val if (exe_val and os.path.exists(exe_val))
+                        else (action_val if isinstance(action_val, str) else "")
+                    )
+                    if file_path and os.path.exists(file_path):
+                        item.setIcon(self.icon_provider.icon(QFileInfo(file_path)))
+                elif res.get("icon_type") == "app":
+                    item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMenuButton))
+                elif res.get("icon_type") == "calc":
+                    item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon))
+                elif res.get("icon_type") in ("settings", "plugin", "shell", "system"):
+                    _icons_cfg = self.theme.get("icons", {})
+                    _color_map = {
+                        "settings": _icons_cfg.get("settings", "#888888"),
+                        "plugin":   _icons_cfg.get("plugin",   "#00BFFF"),
+                        "shell":    _icons_cfg.get("shell",    "#888888"),
+                        "system":   _icons_cfg.get("system",   "#888888"),
+                    }
+                    _it = res["icon_type"]
+                    item.setIcon(load_svg_icon(_it, _color_map.get(_it, "#888888")))
+            except Exception:
+                pass
+
+            self.results_list.addItem(item)
+            has_items = True
+            count += 1
+
+            # Process events periodically to keep UI responsive and allow cancellation
+            if count % 3 == 0:
+                QApplication.processEvents()
+
+        if has_items and self._search_id == current_search_id:
+            # Dynamic height calculation
+            r_cfg = self.theme.get("results_list", {})
+            max_items = int(r_cfg.get("MaxItemToShow", 8))
+            item_h = int(r_cfg.get("height", 36))
+            
+            # Uniform height for all items
+            display_count = min(self.results_list.count(), max_items)
+            total_list_h = display_count * item_h
+
+            self.results_list.setFixedHeight(total_list_h)
+            
+            # Update window height
+            new_win_h = (self.margin * 2) + (self.container_padding * 2) + self.bar_h + self.container_spacing + total_list_h
+            self.setFixedHeight(new_win_h)
+            
             self.results_list.show()
-            self.results_list.setCurrentRow(0)
-        else:
+            if self.results_list.currentRow() == -1 and self.results_list.count() > 0:
+                self.results_list.setCurrentRow(0)
+        elif not has_items and self._search_id == current_search_id:
             self.results_list.hide()
+            initial_h = (self.margin * 2) + (self.container_padding * 2) + self.bar_h
+            self.setFixedHeight(initial_h)
 
     def launch_app(self):
         current_item = self.results_list.currentItem()
@@ -336,8 +562,9 @@ class InputBarUI(QWidget):
                 return True
             elif event.key() == Qt.Key.Key_Right and self.results_list.isVisible():
                 current_item = self.results_list.currentItem()
-                if current_item and current_item.data(_ROLE_ITEMTYPE) == "app":
-                    self._open_app_submenu(current_item)
+                item_type = current_item.data(_ROLE_ITEMTYPE) if current_item else None
+                if item_type in ("app", "file"):
+                    self._open_file_submenu(current_item)
                     return True
             elif event.key() == Qt.Key.Key_Left and self._submenu_state is not None:
                 self._exit_submenu()
@@ -345,14 +572,15 @@ class InputBarUI(QWidget):
         return super().eventFilter(obj, event)
 
     # ------------------------------------------------------------------ #
-    #  App sub-menu (right arrow key)                                      #
+    #  File/app sub-menu (right arrow key)                                #
     # ------------------------------------------------------------------ #
 
-    def _open_app_submenu(self, item: QListWidgetItem):
-        """Opens the action sub-menu for the selected app."""
-        action   = item.data(_ROLE_ACTION)
-        exe_path = item.data(_ROLE_EXEPATH)
-        app_name = item.text()
+    def _open_file_submenu(self, item: QListWidgetItem):
+        """Opens the action sub-menu for the selected app or file."""
+        action    = item.data(_ROLE_ACTION)
+        exe_path  = item.data(_ROLE_EXEPATH)
+        item_name = item.text()
+        item_type = item.data(_ROLE_ITEMTYPE)
 
         # Lazy .lnk resolution if not already done
         if exe_path is None and isinstance(action, str) and action.endswith(".lnk"):
@@ -362,13 +590,15 @@ class InputBarUI(QWidget):
             "saved_query": self.search_bar.text(),
             "action":      action,
             "exe_path":    exe_path,
-            "app_name":    app_name,
+            "item_name":   item_name,
+            "item_type":   item_type,
         }
-        self._show_app_submenu(exe_path, action)
+        self._show_file_submenu(exe_path, action)
 
-    def _show_app_submenu(self, exe_path: str | None, action: str):
-        """Replaces the list with the 3 sub-menu actions."""
-        state = self._submenu_state
+    def _show_file_submenu(self, exe_path: str | None, action: str):
+        """Replaces the list with the file/app action sub-menu."""
+        state     = self._submenu_state
+        icons_cfg = self.theme.get("icons", {})
 
         def start_as_admin():
             target = exe_path or action
@@ -379,15 +609,25 @@ class InputBarUI(QWidget):
             self.hide()
 
         def open_folder():
-            target = exe_path or (action if not action.startswith("shell:appsFolder") else None)
+            target = exe_path or (action if isinstance(action, str) and not action.startswith("shell:appsFolder") else None)
             if not target:
                 return
-            folder = os.path.dirname(target)
+            # If the target itself is a folder, open it directly
+            if os.path.isdir(target):
+                folder = target
+            else:
+                folder = os.path.dirname(target)
             if os.path.isdir(folder):
                 try:
                     subprocess.Popen(["explorer", folder])
                 except Exception as e:
                     eprint(f"Open folder error: {e}")
+            self.hide()
+
+        def copy_file_path():
+            target = exe_path or (action if isinstance(action, str) else "")
+            if target:
+                QApplication.clipboard().setText(target)
             self.hide()
 
         def go_back():
@@ -398,19 +638,29 @@ class InputBarUI(QWidget):
             self.search_bar.blockSignals(False)
             return "KEEP_OPEN_AND_REFRESH"
 
-        submenu_items = [
-            ("▶  Start as admin", start_as_admin, QStyle.StandardPixmap.SP_VistaShield),
-            ("   Open folder",    open_folder,    QStyle.StandardPixmap.SP_DirOpenIcon),
-            ("←  Back",           go_back,        QStyle.StandardPixmap.SP_ArrowLeft),
-        ]
+        # "Start as admin" only for actual executables
+        target_path = exe_path or (action if isinstance(action, str) else "")
+        is_exe = bool(target_path) and target_path.lower().endswith(".exe")
+
+        submenu_items = []
+        if is_exe:
+            submenu_items.append((
+                "Start as admin", start_as_admin,
+                "admin", icons_cfg.get("admin", "#FF8C00"),
+            ))
+        submenu_items.extend([
+            ("Open folder",    open_folder,    "folder",     icons_cfg.get("folder",      "#FFD700")),
+            ("Copy file path", copy_file_path, "system",     icons_cfg.get("system",      "#888888")),
+            ("Back",           go_back,        "arrow-left", icons_cfg.get("arrow_left",  "#FFFFFF")),
+        ])
 
         self.results_list.clear()
-        for label, fn, pixmap in submenu_items:
-            list_item = QListWidgetItem(label)
+        for label, fn, icon_name, icon_color in submenu_items:
+            list_item = QListWidgetItem(f"  {label}")
             list_item.setData(_ROLE_ACTION,   fn)
             list_item.setData(_ROLE_ITEMTYPE, "submenu_action")
             list_item.setData(_ROLE_EXEPATH,  None)
-            list_item.setIcon(self.style().standardIcon(pixmap))
+            list_item.setIcon(load_svg_icon(icon_name, icon_color))
             self.results_list.addItem(list_item)
 
         self.results_list.show()
@@ -448,6 +698,13 @@ class InputBarUI(QWidget):
         self.focus_timer.stop()
         self._submenu_state = None
         self.clearFocus()
+
+        # Clear content immediately so the next show is clean (no flash of old results)
+        self.search_bar.clear()
+        self.results_list.hide()
+        self.results_list.clear()
+        initial_h = (self.margin * 2) + (self.container_padding * 2) + self.bar_h
+        self.setFixedHeight(initial_h)
 
         # Clean AHK RunWait release
         if hasattr(self, 'active_client') and self.active_client:

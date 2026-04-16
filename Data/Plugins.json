@@ -1,4 +1,12 @@
 {
+    "Everything/Everything.py": {
+        "toggle": true,
+        "keyword": [
+            "everything",
+            "f",
+            "*"
+        ]
+    },
     "Calc.py": {
         "toggle": true,
         "keyword": [
@@ -17,6 +25,13 @@
         "toggle": true,
         "keyword": [
             "app",
+            "*"
+        ]
+    },
+    "Shell/Shell.py": {
+        "toggle": true,
+        "keyword": [
+            "shell",
             "*"
         ]
     }

@@ -1,0 +1,9 @@
+# Shell command examples:
+#   myscript=python C:\My\Path\script.py --arg
+#   myproject=code C:\Dev\project
+#
+# You can run commands. Examples :
+#   fastfetch=pwsh fastfetch
+#   btop=cmd btop
+#   showFolder=pwsh ls "C:\My\Path\"
+#       Open a terminal and list all items inside that folder.

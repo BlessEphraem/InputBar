@@ -83,7 +83,7 @@ def load_theme(theme_name: str = "theme_default") -> dict:
     default_theme = {
         "window": {
             "width": 620,
-            "height": 500,
+            "height": 50,
             "margin": 50
         },
         "container": {
@@ -116,7 +116,12 @@ def load_theme(theme_name: str = "theme_default") -> dict:
             "font_family":         "Segoe UI",
             "item_padding":        "8px",
             "item_border_radius":  "4px",
-            "height":              350
+            "height":              36,
+            "MaxItemToShow":       8,
+            "icon_size":           24,
+            "line_spacing":        0,
+            "subtitle_opacity":    160,
+            "subtitle_font_ratio": 1.0
         },
         "scrollbar": {
             "width":             "0px",
@@ -124,6 +129,18 @@ def load_theme(theme_name: str = "theme_default") -> dict:
             "handle_color":      "rgba(100, 100, 100, 0.6)",
             "handle_hover_color":"rgba(150, 150, 150, 0.8)",
             "border_radius":     "3px"
+        },
+        "icons": {
+            "arrow_down":  "#FFFFFF",
+            "arrow_left":  "#FFFFFF",
+            "arrow_right": "#FFFFFF",
+            "arrow_up":    "#FFFFFF",
+            "admin":       "#FF8C00",
+            "folder":      "#FFD700",
+            "plugin":      "#00BFFF",
+            "settings":    "#888888",
+            "shell":       "#888888",
+            "system":      "#888888",
         }
     }
 

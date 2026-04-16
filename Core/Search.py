@@ -1,5 +1,6 @@
 import os
 import json
+import inspect as _inspect
 from datetime import datetime, timedelta
 from Core.Paths import HISTORY_FILE
 from Core.Logging import eprint
@@ -13,7 +14,7 @@ def load_history():
     if os.path.exists(HISTORY_FILE):
         try:
             with open(HISTORY_FILE, "r") as f: _history_data = json.load(f)
-        except: _history_data = {}
+        except Exception: _history_data = {}
     else:
         _history_data = {}
 
@@ -35,6 +36,23 @@ def get_score(item_name):
             return _history_data[item_name]['count'] * 5
     return 0
 
+# Cache per plugin whether on_search accepts is_strict — avoids calling
+# inspect.signature() on every search query.
+_plugin_has_is_strict: dict = {}
+
+
+def _accepts_is_strict(plugin) -> bool:
+    """Return True if plugin.on_search accepts an is_strict keyword argument."""
+    key = id(plugin)
+    if key not in _plugin_has_is_strict:
+        try:
+            sig = _inspect.signature(plugin.on_search)
+            _plugin_has_is_strict[key] = "is_strict" in sig.parameters
+        except Exception:
+            _plugin_has_is_strict[key] = False
+    return _plugin_has_is_strict[key]
+
+
 def process_search(text, plugins):
     query       = text.strip()
     query_lower = query.lower()
@@ -49,19 +67,23 @@ def process_search(text, plugins):
         if first_word in keywords and first_word != "*":
             strict_plugins.append(plugin)
 
-    all_results = []
-
     if strict_plugins:
         # Strict mode: the keyword is stripped from the query before passing to the plugin
         payload = query[len(first_word):].strip()
 
         for plugin in strict_plugins:
             try:
-                res = plugin.on_search(payload)
+                # Pass is_strict=True to allow plugins to behave differently
+                # if the keyword was explicitly typed.
+                if _accepts_is_strict(plugin):
+                    res = plugin.on_search(payload, is_strict=True)
+                else:
+                    res = plugin.on_search(payload)
+
                 if res:
                     for item in res:
                         item["score"] = item.get("score", 100) + get_score(item["name"])
-                        all_results.append(item)
+                        yield item
             except Exception as e:
                 eprint(f"Plugin error (Strict) {plugin.__name__}: {e}")
     else:
@@ -70,13 +92,14 @@ def process_search(text, plugins):
             keywords = getattr(plugin, "_keywords", [])
             if "*" in keywords:
                 try:
-                    res = plugin.on_search(query)
+                    if _accepts_is_strict(plugin):
+                        res = plugin.on_search(query, is_strict=False)
+                    else:
+                        res = plugin.on_search(query)
+
                     if res:
                         for item in res:
                             item["score"] = item.get("score", 100) + get_score(item["name"])
-                            all_results.append(item)
+                            yield item
                 except Exception as e:
                     eprint(f"Plugin error (Global) {plugin.__name__}: {e}")
-
-    all_results.sort(key=lambda x: x.get("score", 0), reverse=True)
-    return all_results[:MAX_TOTAL_ITEMS]

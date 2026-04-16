@@ -1,0 +1,82 @@
+# Everything Plugin — Extensions
+# Extensions listed here trigger a file search automatically when typed in InputBar.
+# One extension per line. Lines starting with '#' are ignored.
+
+# Documents
+.pdf
+.doc
+.docx
+.txt
+.rtf
+.odt
+.md
+.csv
+.xls
+.xlsx
+.ppt
+.pptx
+
+# Images
+.png
+.jpg
+.jpeg
+.gif
+.svg
+.webp
+.bmp
+.ico
+.tiff
+
+# Videos
+.mp4
+.mkv
+.avi
+.mov
+.wmv
+.webm
+.flv
+
+# Audio
+.mp3
+.wav
+.flac
+.ogg
+.m4a
+.aac
+
+# Archives
+.zip
+.rar
+.7z
+.tar
+.gz
+.iso
+
+# Code & Web
+.json
+.xml
+.html
+.css
+.js
+.ts
+.py
+.java
+.cpp
+.c
+.cs
+.php
+.sql
+.yml
+.yaml
+
+# System & Scripts
+.exe
+.msi
+.bat
+.cmd
+.ps1
+.sh
+.ini
+.cfg
+.dll
+.lnk

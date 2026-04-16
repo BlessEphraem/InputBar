@@ -10,7 +10,7 @@ loaded_plugins = []
 # Plugins that should always respond to every query (global mode).
 # Even if Plugins.json was generated before "calc" was in this set,
 # the runtime check below injects "*" at load time.
-_ALWAYS_GLOBAL = {"app", "system", "calc"}
+_ALWAYS_GLOBAL = {"app", "shell", "system", "calc"}
 
 
 # ──────────────────────────────────────────────
@@ -32,7 +32,8 @@ def _load_core(folder):
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
                 if hasattr(module, "on_search"):
-                    module._keywords = [module_name.lower()]
+                    if not hasattr(module, "_keywords"):
+                        module._keywords = [module_name.lower()]
                     loaded_plugins.append(module)
                     dprint(f"Core loaded: {module_name} (keyword: {module._keywords})")
             except Exception as e:
@@ -53,7 +54,7 @@ def _sync_plugins_config(current_files):
         try:
             with open(PLUGINS_FILE, "r") as f:
                 data = json.load(f)
-        except:
+        except Exception:
             data = {}
 
     new_data = {}
@@ -164,7 +165,7 @@ def on_search(text):
     try:
         with open(PLUGINS_FILE, "r") as f:
             data = json.load(f)
-    except:
+    except Exception:
         return []
 
     search_term = text.lower().strip()
@@ -178,6 +179,6 @@ def on_search(text):
             "name":   f"{status} {name} (Press Enter to toggle)",
             "score":  1500,
             "action": lambda n=name, s=is_enabled: _toggle_plugin(n, s),
-            "icon_type": "settings"
+            "icon_type": "plugin"
         })
     return results

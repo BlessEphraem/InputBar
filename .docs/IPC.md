@@ -1,6 +1,6 @@
 ## External Trigger (IPC)
 
-<a href="Configuration.md"><kbd>← Go back to Configuration page</kbd></a>
+<a href="Configuration.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Configuration</kbd></a>
 
 InputBar listens on a local pipe `InputBar_Singleton_Lock`.  
 

@@ -13,6 +13,9 @@ except ImportError:
     _HAS_WIN32COM = False
 
 from Core.Logging import eprint as _eprint
+from Core.Paths import PLUGINS_DATA_DIR as _PLUGINS_DATA_DIR
+
+_APP_DATA_DIR = os.path.join(_PLUGINS_DATA_DIR, "App")
 
 apps_index = []
 ALIASES    = {}
@@ -83,8 +86,7 @@ def load_aliases():
     global ALIASES
     ALIASES.clear()
 
-    current_dir  = os.path.dirname(os.path.abspath(__file__))
-    aliases_file = os.path.join(current_dir, "aliases.data")
+    aliases_file = os.path.join(_APP_DATA_DIR, "aliases.data")
 
     if os.path.exists(aliases_file):
         try:
@@ -259,6 +261,14 @@ def build_index():
                         if target and any(target.lower().endswith(ext) for ext in _JUNK_EXTS):
                             continue
                         if icon_file and any(icon_file.lower().endswith(ext) for ext in _JUNK_EXTS):
+                            continue
+
+                        # Skip shortcuts that open a non-executable file (e.g. Help.lnk → .chm)
+                        # Allow: .exe targets, folder targets, empty targets (UWP/store)
+                        if (target
+                                and os.path.exists(target)
+                                and not target.lower().endswith(".exe")
+                                and not os.path.isdir(target)):
                             continue
 
                         # Resolve best icon source (target exe > icon exe > icon .ico)
@@ -453,17 +463,6 @@ def on_search(text):
 
     if not query:
         return []
-
-    # Index reload command
-    if query_lower in ("app rebuild", "app reload", "rebuild apps", "reload apps"):
-        def _rebuild():
-            build_index()
-        return [{
-            "name":      "🔄 App: Reload application index",
-            "score":     2000,
-            "action":    _rebuild,
-            "icon_type": "settings",
-        }]
 
     search_term = ALIASES.get(query_lower, query_lower)
     choices     = [app["name"] for app in apps_index]

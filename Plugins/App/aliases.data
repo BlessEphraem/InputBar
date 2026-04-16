@@ -1,3 +1,7 @@
+# App alias examples:
+#   cmd=invite
+#   calc=calculatrice
+#   edge=microsoft edge
 cmd=invite
 pwsh=powershell
 calc=calculatrice

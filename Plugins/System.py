@@ -3,10 +3,10 @@ from Core.Logging import eprint
 
 # List of system commands (easily customizable)
 commands = [
-    {"name": "🔒 System Lock",      "cmd": "rundll32.exe user32.dll,LockWorkStation",       "keys": ["lock"]},
-    {"name": "🌙 System Sleep",     "cmd": "rundll32.exe powrprof.dll,SetSuspendState 0,1,0","keys": ["sleep"]},
-    {"name": "🔄 System Restart",   "cmd": "shutdown /r /t 0",                               "keys": ["restart", "reboot"]},
-    {"name": "🔌 System Shut Down", "cmd": "shutdown /s /t 0",                               "keys": ["shutdown", "shut down", "poweroff"]},
+    {"name": "System Lock",     "cmd": "rundll32.exe user32.dll,LockWorkStation",        "keys": ["lock"]},
+    {"name": "System Sleep",    "cmd": "rundll32.exe powrprof.dll,SetSuspendState 0,1,0", "keys": ["sleep"]},
+    {"name": "System Restart",  "cmd": "shutdown /r /t 0",                                "keys": ["restart", "reboot"]},
+    {"name": "System Shut Down","cmd": "shutdown /s /t 0",                                "keys": ["shutdown", "shut down", "poweroff"]},
 ]
 
 # Global state for the pending confirmation
@@ -46,10 +46,10 @@ def on_search(text):
     # Confirmation mode: only show the validation button
     if _pending_cmd:
         return [{
-            "name": f"⚠️ Confirm: {_pending_name}? (Press Enter to confirm)",
+            "name": f"Confirm: {_pending_name}? (Press Enter to confirm)",
             "score": 5000,
             "action": exec_cmd,
-            "icon_type": "settings"
+            "icon_type": "system"
         }]
 
     # Normal search mode
@@ -73,7 +73,7 @@ def on_search(text):
                 "name": c["name"],
                 "score": 1000,
                 "action": lambda cmd=c["cmd"], name=c["name"]: _request_confirm(cmd, name),
-                "icon_type": "settings"
+                "icon_type": "system"
             })
 
     return results
