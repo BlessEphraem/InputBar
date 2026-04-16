@@ -105,6 +105,7 @@ def load_theme(theme_name: str = "theme_default") -> dict:
             "padding":      "12px",
             "font_size":    "18px",
             "font_family":  "Segoe UI",
+            "font_weight":  400,
             "placeholder":  "Search..."
         },
         "results_list": {
@@ -114,6 +115,7 @@ def load_theme(theme_name: str = "theme_default") -> dict:
             "selected_text_color": "white",
             "font_size":           "15px",
             "font_family":         "Segoe UI",
+            "font_weight":         400,
             "item_padding":        "8px",
             "item_border_radius":  "4px",
             "height":              36,
@@ -121,7 +123,8 @@ def load_theme(theme_name: str = "theme_default") -> dict:
             "icon_size":           24,
             "line_spacing":        0,
             "subtitle_opacity":    160,
-            "subtitle_font_ratio": 1.0
+            "subtitle_font_ratio": 1.0,
+            "subtitle_font_weight": 400
         },
         "scrollbar": {
             "width":             "0px",

@@ -47,20 +47,20 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 
 # 🚀 Installation
 
-* ✅ **Winget**
-```
-winget install Ephraem.InputBar
-```
-
 * ✅ **Setup / Portable**  
   Download the `Setup.exe` or `Portable.zip` from the [**Releases page**](https://github.com/BlessEphraem/InputBar/releases).
+
+* ✅ **Winget**
+  ```
+  winget install Ephraem.InputBar
+  ```
 
 * 🛠️ **From Source**
 
   Clone the repository, then install the dependencies:
-```bash
-pip install PyQt6 rapidfuzz pywin32
-```
+  ```bash
+  pip install PyQt6 rapidfuzz pywin32
+  ```
   Run `src/InputBar.pyw` (as Administrator for global hotkeys).
 
 # ♟️ How to use

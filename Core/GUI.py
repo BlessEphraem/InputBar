@@ -59,6 +59,7 @@ class ResultItemDelegate(QStyledItemDelegate):
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.TextAntialiasing)
 
         r_cfg = self.theme.get("results_list", {})
         
@@ -93,47 +94,55 @@ class ResultItemDelegate(QStyledItemDelegate):
         # Setup Font from theme
         font_family = r_cfg.get("font_family", "Segoe UI")
         theme_size_str = str(r_cfg.get("font_size", "15px")).replace("px", "")
-        try:
-            theme_size = int(theme_size_str)
-        except Exception:
-            theme_size = 15
-            
+        try: theme_size = int(theme_size_str)
+        except Exception: theme_size = 15
+        
         base_font = QFont(font_family)
+        base_font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
         painter.setPen(text_color)
         
         if subtitle:
-            sub_ratio  = float(r_cfg.get('subtitle_font_ratio', 1.0))
+            # Two-line mode: center using metrics and theme values
+            sub_ratio = float(r_cfg.get('subtitle_font_ratio', 1.0))
             line_space = int(r_cfg.get('line_spacing', 0))
-
+            
+            # Title Font & Metrics
             title_font = QFont(base_font)
             title_font.setPixelSize(theme_size)
-            title_fm   = QFontMetrics(title_font)
-            title_h    = title_fm.height()   # actual rendered height, not pixelSize
-
+            title_font.setWeight(int(r_cfg.get('font_weight', 400)))
+            painter.setFont(title_font)
+            fm_title = painter.fontMetrics()
+            h_title = fm_title.height()
+            
+            # Subtitle Font & Metrics
             sub_font = QFont(base_font)
             sub_font.setPixelSize(max(1, int(theme_size * sub_ratio)))
-            sub_fm   = QFontMetrics(sub_font)
-            sub_h    = sub_fm.height()
-
-            total_text_h = title_h + line_space + sub_h
+            sub_font.setWeight(int(r_cfg.get('subtitle_font_weight', 400)))
+            fm_sub = QFontMetrics(sub_font)
+            h_sub = fm_sub.height()
+            
+            # Total height of the text block
+            total_text_h = h_title + line_space + h_sub
             start_y = rect.top() + (rect.height() - total_text_h) // 2
-
-            # Title
-            painter.setFont(title_font)
-            title_rect = QRect(text_x, start_y, available_width, title_h)
-            painter.drawText(title_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, name)
-
-            # Subtitle
+            
+            # Draw Title - Height expansion to avoid clipping
+            title_rect = QRect(text_x, start_y, available_width, h_title + 10)
+            painter.drawText(title_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, name)
+            
+            # Draw Subtitle
             painter.setFont(sub_font)
             sub_color = QColor(text_color)
             sub_color.setAlpha(int(r_cfg.get('subtitle_opacity', 160)))
             painter.setPen(sub_color)
-            sub_rect  = QRect(text_x, start_y + title_h + line_space, available_width, sub_h)
+            
+            sub_y = start_y + h_title + line_space
+            sub_rect = QRect(text_x, sub_y, available_width, h_sub + 10)
             short_sub = self.shorten_path(subtitle, painter, available_width)
-            painter.drawText(sub_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, short_sub)
+            painter.drawText(sub_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, short_sub)
         else:
             # Single line mode: full theme size
             base_font.setPixelSize(theme_size)
+            base_font.setWeight(int(r_cfg.get('font_weight', 400)))
             painter.setFont(base_font)
             title_rect = QRect(text_x, rect.top(), available_width, rect.height())
             painter.drawText(title_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, name)
@@ -282,6 +291,7 @@ class InputBarUI(QWidget):
                 padding: {s.get('padding', '12px')};
                 font-size: {s.get('font_size', '18px')};
                 font-family: {s.get('font_family', 'Segoe UI')};
+                font-weight: {s.get('font_weight', 400)};
             }}
         """)
         self.search_bar.textChanged.connect(self.update_results_ui)
