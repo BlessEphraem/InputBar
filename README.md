@@ -7,7 +7,7 @@
 </div>
 
 <p align="center">
-  <img src="./Assets/Icons/Logo.svg" width="300" alt="Premiere Companion">
+  <img src="./Assets/Icons/Logo.svg" width="300" alt="InputBar">
 </p>
 
 <p align="center">
@@ -35,26 +35,33 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 # ✨ Features
 
 - **App search** — fuzzy search across all installed apps (Start Menu, LOCALAPPDATA, Windows registry, UWP/Store)
+- **File search** — integrates [voidtools Everything](https://www.voidtools.com/) for instant file and folder search
 - **Built-in calculator** — type `2 + 2`, the result appears and copies to clipboard
 - **System commands** — lock, sleep, restart, shutdown (with confirmation step)
-- **App submenu** — press right arrow on any app to access "Start as admin" / "Open folder"
+- **Result submenu** — press `→` on any app or file to access Start as admin / Open folder / Copy file path
+- **Shell shortcuts** — named command shortcuts with fuzzy search, per-entry shell override
 - **Customizable shortcuts** — standard keys or Windows key via low-level hook
-- **Fully themeable** — colors, borders, transparency via JSON
+- **Fully themeable** — colors, borders, transparency, icon tints via JSON
 - **IPC pipe** — can be triggered from external scripts (AutoHotkey, etc.)
 - **User data persistence** — updates inject new keys without overwriting existing settings
 
 # 🚀 Installation
 
-* ✅ **Recommended - Download the Setup / Portable version**
-  1. Choose the "setup.exe" or the "portable.zip" from the [**Releases page**](https://github.com/BlessEphraem/InputBar/releases).
-  2. Install or extract the files. The portable version is pre-packaged and ready to use out of the box.
+* ✅ **Winget**
+```
+winget install Ephraem.InputBar
+```
 
-* 🛠️ **From Source - Run the `.pyw` Script**
+* ✅ **Setup / Portable**  
+  Download the `Setup.exe` or `Portable.zip` from the [**Releases page**](https://github.com/BlessEphraem/InputBar/releases).
 
-  If you prefer to run directly from source, clone this repository. Run your terminal as Administrator (required for global hotkeys and mouse simulation) and install the dependencies:
-```Bash
+* 🛠️ **From Source**
+
+  Clone the repository, then install the dependencies:
+```bash
 pip install PyQt6 rapidfuzz pywin32
 ```
+  Run `src/InputBar.pyw` (as Administrator for global hotkeys).
 
 # ♟️ How to use
 
@@ -63,14 +70,12 @@ pip install PyQt6 rapidfuzz pywin32
 | Open InputBar | `Ctrl+Space` *(default)* |
 | Navigate results | `↑` / `↓` |
 | Launch selection | `Enter` |
-| Open app submenu | `→` |
+| Open submenu | `→` |
 | Go back | `←` or select "Back" |
 | Close InputBar | `Escape` |
 
 # ⚙️ Configuration
-To keep the program as lightweight as possible, it does not include a Graphical User Interface (GUI). Instead, everything is managed through simple .json configuration files.
-
-Don't worry if you're not a developer - configuring the app is straightforward! I've written detailed guides to walk you through the process step by step.
+Everything is managed through JSON files — no settings GUI.
 
 <a href=".docs/Configuration.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Configuration Documentation</kbd></a>
 
@@ -83,9 +88,28 @@ chrome    →  Google Chrome
 vsc       →  Visual Studio Code  (via alias)
 ```
 
-Press `→` on any result to access **Start as admin** or **Open folder**.
+Press `→` on any result to access **Start as admin**, **Open folder**, or **Copy file path**.
 
 <a href=".docs/Plugins/App.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ App Documentation</kbd></a>
+
+## 🧩 Everything (file search)
+
+Requires [voidtools Everything](https://www.voidtools.com/) — started silently in the background if not running.
+
+```
+f report.pdf          →  search "report.pdf" everywhere
+Z:\Projects           →  list all files in that folder
+wallpapers .png       →  search .png files in your "wallpapers" favorite folder
+.mp4                  →  list recently modified .mp4 files
+```
+
+Define folder shortcuts in `Plugins/Everything/favorites.data`:
+```
+wallpapers=C:\Users\Me\Pictures\Wallpapers
+projects=D:\Dev\Projects
+```
+
+<a href=".docs/Plugins/Everything.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Everything Documentation</kbd></a>
 
 ## 🧩 Calc
 
@@ -118,6 +142,12 @@ Type `shell` to list your saved shortcuts, or run commands directly from InputBa
 shell fastfetch       →  runs your "fastfetch" shortcut
 git status            →  opens a terminal and runs git status
 python C:\script.py   →  runs the script in a new window
+```
+
+Define shortcuts in `Plugins/Shell/favorites.data`:
+```
+btop=cmd btop
+fastfetch=pwsh fastfetch
 ```
 
 <a href=".docs/Plugins/Shell.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Shell Documentation</kbd></a>
