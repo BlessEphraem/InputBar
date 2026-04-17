@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import ctypes
 import subprocess
@@ -36,14 +37,12 @@ class ResultItemDelegate(QStyledItemDelegate):
             color_val = color_val.strip()
             if color_val.startswith("rgba"):
                 try:
-                    import re
                     m = re.findall(r"(\d+\.?\d*)", color_val)
                     if len(m) >= 4:
                         return QColor(int(m[0]), int(m[1]), int(m[2]), int(float(m[3]) * 255))
                 except Exception: pass
             elif color_val.startswith("rgb"):
                 try:
-                    import re
                     m = re.findall(r"(\d+)", color_val)
                     if len(m) >= 3:
                         return QColor(int(m[0]), int(m[1]), int(m[2]))
@@ -188,8 +187,13 @@ class InputBarUI(QWidget):
         self.config  = config
         self.theme   = theme
         self.plugins = plugins
-        self.cli_mode = IS_CLI_MODE
-        self.action_executed = False
+        _icons_cfg = self.theme.get("icons", {})
+        self._color_map = {
+            "settings": _icons_cfg.get("settings", "#888888"),
+            "plugin":   _icons_cfg.get("plugin",   "#00BFFF"),
+            "shell":    _icons_cfg.get("shell",    "#888888"),
+            "system":   _icons_cfg.get("system",   "#888888"),
+        }
         self.icon_provider   = QFileIconProvider()
         self._search_id = 0
         # File/app sub-menu state (right arrow)
@@ -363,13 +367,6 @@ class InputBarUI(QWidget):
 
         self.results_list.clear()
 
-        # Enforce ListMax cap
-        list_max = self.config.get("ListMax", 200)
-        try:
-            list_max = max(0, min(int(list_max), 200))
-        except Exception:
-            list_max = 200
-
         result_generator = process_search(text, self.plugins)
 
         has_items = False
@@ -378,9 +375,6 @@ class InputBarUI(QWidget):
         for res in result_generator:
             if self._search_id != current_search_id:
                 return  # Abort if user typed something new
-
-            if count >= list_max:
-                break
 
             item = QListWidgetItem(res["name"])
             item.setData(_ROLE_ACTION,   res["action"])
@@ -406,15 +400,8 @@ class InputBarUI(QWidget):
                 elif res.get("icon_type") == "calc":
                     item.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon))
                 elif res.get("icon_type") in ("settings", "plugin", "shell", "system"):
-                    _icons_cfg = self.theme.get("icons", {})
-                    _color_map = {
-                        "settings": _icons_cfg.get("settings", "#888888"),
-                        "plugin":   _icons_cfg.get("plugin",   "#00BFFF"),
-                        "shell":    _icons_cfg.get("shell",    "#888888"),
-                        "system":   _icons_cfg.get("system",   "#888888"),
-                    }
                     _it = res["icon_type"]
-                    item.setIcon(load_svg_icon(_it, _color_map.get(_it, "#888888")))
+                    item.setIcon(load_svg_icon(_it, self._color_map.get(_it, "#888888")))
             except Exception:
                 pass
 
@@ -453,7 +440,6 @@ class InputBarUI(QWidget):
     def launch_app(self):
         current_item = self.results_list.currentItem()
         if current_item:
-            self.action_executed = True
             action = current_item.data(_ROLE_ACTION)
             save_to_history(current_item.text())
 
@@ -704,17 +690,23 @@ class InputBarUI(QWidget):
             if self.config.get("HideOnFocusLost", True):
                 self.hide()
 
-    def hideEvent(self, event):
-        self.focus_timer.stop()
-        self._submenu_state = None
-        self.clearFocus()
-
-        # Clear content immediately so the next show is clean (no flash of old results)
+    def hide(self):
+        """Override hide to clear content before the window disappears, preventing DWM flash on next show."""
+        self.search_bar.blockSignals(True)
         self.search_bar.clear()
+        self.search_bar.blockSignals(False)
         self.results_list.hide()
         self.results_list.clear()
         initial_h = (self.margin * 2) + (self.container_padding * 2) + self.bar_h
         self.setFixedHeight(initial_h)
+        self.repaint()
+        QApplication.processEvents()
+        super().hide()
+
+    def hideEvent(self, event):
+        self.focus_timer.stop()
+        self._submenu_state = None
+        self.clearFocus()
 
         # Clean AHK RunWait release
         if hasattr(self, 'active_client') and self.active_client:

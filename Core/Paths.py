@@ -3,7 +3,6 @@ import sys
 import json
 import argparse
 import tempfile
-import re
 
 # Parse global arguments
 parser = argparse.ArgumentParser()
@@ -114,33 +113,4 @@ SETTINGS_FILE = os.path.join(DATA_DIR, "Settings.json")
 LOG_FILE = os.path.join(tempfile.gettempdir(), "InputBar.log")
 
 
-def get_plugin_temp_path(plugin_name, item_name):
-    """
-    Generates the absolute path for a plugin's temporary data file.
-    Example: InputBar_Effects_History.tmp
-    """
-    if plugin_name.lower().endswith('.py'):
-        plugin_name = plugin_name[:-3]
 
-    clean_name = re.sub(r'[^a-zA-Z0-9_-]', '', plugin_name)
-    clean_item = re.sub(r'[^a-zA-Z0-9_-]', '', item_name)
-    temp_dir   = tempfile.gettempdir()
-
-    return os.path.join(temp_dir, f"InputBar_{clean_name}_{clean_item}.tmp")
-
-
-def write_plugin_temp_result(plugin_name, content):
-    """
-    Creates a standardised temporary file for the specified plugin's result in %TEMP%.
-    Returns the absolute path of the created file.
-    """
-    temp_filepath = get_plugin_temp_path(plugin_name, "result")
-
-    try:
-        with open(temp_filepath, "w", encoding="utf-8") as f:
-            f.write(str(content))
-        return temp_filepath
-    except Exception as e:
-        from Core.Logging import eprint
-        eprint(f"Error writing temp file for {plugin_name}: {e}")
-        return None

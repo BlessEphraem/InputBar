@@ -22,35 +22,34 @@ Plugin management. Edit directly or via the `plugins` command inside InputBar.
 {
     "Calc.py": {
         "toggle": true,
-        "keyword": [
-            "calc",
-            "*"
-        ]
+        "keyword": ["calc", "*"],
+        "limit": 15
     },
     "System.py": {
         "toggle": true,
-        "keyword": [
-            "system",
-            "*"
-        ]
+        "keyword": ["system", "*"],
+        "limit": 15
     },
     "App/App.py": {
         "toggle": true,
-        "keyword": [
-            "app",
-            "*"
-        ]
+        "keyword": ["app", "*"],
+        "limit": 15
     },
     "Shell/Shell.py": {
         "toggle": true,
-        "keyword": [
-            "shell",
-            "*"
-        ]
+        "keyword": ["shell", "*"],
+        "limit": 15
+    },
+    "Everything/Everything.py": {
+        "toggle": true,
+        "keyword": ["everything", "f", "*"],
+        "limit": 15
     }
-
-...
+}
 ```
 
-The `"*"` keyword means the plugin responds to all searches (global mode).  
-Without `"*"`, the plugin only activates when the search starts with its keyword.
+| Key | Type | Description |
+|-----|------|-------------|
+| `toggle` | bool | Enable or disable the plugin |
+| `keyword` | list | Keywords that trigger the plugin. `"*"` = responds to every query (global mode). Without `"*"`, the plugin only activates when the search starts with its keyword |
+| `limit` | int | Maximum number of results this plugin can return (default `15`) |

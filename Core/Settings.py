@@ -13,7 +13,6 @@ def load_global_config():
         "HideOnFocusLost": True,
         "HideOnPress":     False,  # Can be: False, "OnFocus", or "Always"
         "LoopList":        True,   # Loop navigation in the results list
-        "ListMax":         200,    # Maximum number of displayed results
         "Theme":           "theme_default"  # Theme file name in Data/Themes/ (without .json)
     }
     if not os.path.exists(SETTINGS_FILE):

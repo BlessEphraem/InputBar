@@ -1,11 +1,11 @@
 import os
 import json
 import inspect as _inspect
+import itertools
 from datetime import datetime, timedelta
 from Core.Paths import HISTORY_FILE
 from Core.Logging import eprint
 
-MAX_TOTAL_ITEMS = 200
 DAYS_TO_KEEP    = 90
 _history_data   = {}
 
@@ -29,10 +29,11 @@ def save_to_history(name):
     except Exception as e:
         eprint(f"Error saving history: {e}")
 
-def get_score(item_name):
+def get_score(item_name, now=None):
     if item_name in _history_data:
         last_used = datetime.fromisoformat(_history_data[item_name]['date'])
-        if datetime.now() - last_used < timedelta(days=DAYS_TO_KEEP):
+        if now is None: now = datetime.now()
+        if now - last_used < timedelta(days=DAYS_TO_KEEP):
             return _history_data[item_name]['count'] * 5
     return 0
 
@@ -54,6 +55,7 @@ def _accepts_is_strict(plugin) -> bool:
 
 
 def process_search(text, plugins):
+    now = datetime.now()
     query       = text.strip()
     query_lower = query.lower()
     parts       = query_lower.split(" ", 1)
@@ -61,11 +63,23 @@ def process_search(text, plugins):
 
     strict_plugins = []
 
-    # Check if the first word matches a plugin's strict keyword
+    # Pass 1: first word matches a plugin keyword exactly (space-separated)
     for plugin in plugins:
         keywords = getattr(plugin, "_keywords", [])
         if first_word in keywords and first_word != "*":
             strict_plugins.append(plugin)
+
+    # Pass 2: single non-alphanumeric prefix keyword — matches without requiring a space.
+    # e.g. keyword "/" matches "/fastfetch" in addition to "/ fastfetch".
+    if not strict_plugins:
+        for plugin in plugins:
+            keywords = getattr(plugin, "_keywords", [])
+            for kw in keywords:
+                if (kw != "*" and len(kw) == 1 and not kw.isalnum()
+                        and query_lower.startswith(kw) and len(query_lower) > 1):
+                    first_word = kw
+                    strict_plugins.append(plugin)
+                    break
 
     if strict_plugins:
         # Strict mode: the keyword is stripped from the query before passing to the plugin
@@ -81,8 +95,9 @@ def process_search(text, plugins):
                     res = plugin.on_search(payload)
 
                 if res:
-                    for item in res:
-                        item["score"] = item.get("score", 100) + get_score(item["name"])
+                    limit = getattr(plugin, "_limit", 15)
+                    for item in itertools.islice(res, limit):
+                        item["score"] = item.get("score", 100) + get_score(item["name"], now=now)
                         yield item
             except Exception as e:
                 eprint(f"Plugin error (Strict) {plugin.__name__}: {e}")
@@ -98,8 +113,9 @@ def process_search(text, plugins):
                         res = plugin.on_search(query)
 
                     if res:
-                        for item in res:
-                            item["score"] = item.get("score", 100) + get_score(item["name"])
+                        limit = getattr(plugin, "_limit", 15)
+                        for item in itertools.islice(res, limit):
+                            item["score"] = item.get("score", 100) + get_score(item["name"], now=now)
                             yield item
                 except Exception as e:
                     eprint(f"Plugin error (Global) {plugin.__name__}: {e}")

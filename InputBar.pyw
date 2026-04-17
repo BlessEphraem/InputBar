@@ -6,15 +6,12 @@ import subprocess
 import threading
 
 # --- CACHE SETUP BEFORE ANY OTHER IMPORTS ---
-parser = argparse.ArgumentParser()
-parser.add_argument('--search', type=str, help="Text to pre-fill in the search bar")
-parser.add_argument('--config', type=str, help="Custom root path for Data and Plugins")
-args, unknown = parser.parse_known_args()
-
-IS_CLI_MODE = bool(args.search)
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR   = os.path.abspath(args.config) if args.config else SCRIPT_DIR
+BASE_DIR   = SCRIPT_DIR
+if "--config" in sys.argv:
+    idx = sys.argv.index("--config")
+    if idx + 1 < len(sys.argv):
+        BASE_DIR = os.path.abspath(sys.argv[idx + 1])
 
 # Redirect .pyc cache to Data/__pycache__ in dev mode only.
 # In frozen mode PyInstaller has already compiled everything — no .pyc generated.
@@ -81,7 +78,6 @@ def setup_tray_icon(window, data_dir: str, quit_callback) -> QSystemTrayIcon:
     tray_icon = QSystemTrayIcon(window)
 
     from PyQt6.QtWidgets import QStyle
-    from PyQt6.QtGui import QIcon
     from PyQt6.QtCore import QTimer
 
     # 1. Load a safe system icon first (100% compatible Windows HICON)
@@ -243,3 +239,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

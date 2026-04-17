@@ -5,12 +5,19 @@ import importlib.util
 from Core.Paths import PLUGINS_DIR, CORE_DIR, PLUGINS_FILE
 from Core.Logging import dprint, eprint
 
-loaded_plugins = []
+loaded_plugins  = []
+_plugins_cache  = None
 
 # Plugins that should always respond to every query (global mode).
 # Even if Plugins.json was generated before "calc" was in this set,
 # the runtime check below injects "*" at load time.
 _ALWAYS_GLOBAL = {"app", "shell", "system", "calc"}
+
+# Extra keywords added alongside the base name when a plugin entry is first created.
+_EXTRA_KEYWORDS: dict[str, list[str]] = {
+    "everything": ["f"],
+    "shell":      ["/"],
+}
 
 
 # ──────────────────────────────────────────────
@@ -65,21 +72,23 @@ def _sync_plugins_config(current_files):
             continue
         if isinstance(conf, bool):
             base_name = os.path.basename(name)[:-3].lower()
-            kws = [base_name]
+            kws = [base_name] + _EXTRA_KEYWORDS.get(base_name, [])
             if base_name in _ALWAYS_GLOBAL:
                 kws.append("*")
-            new_data[name] = {"toggle": conf, "keyword": kws}
+            new_data[name] = {"toggle": conf, "keyword": kws, "limit": 15}
         else:
+            if "limit" not in conf:
+                conf["limit"] = 15
             new_data[name] = conf
 
     # Add new plugins not yet tracked
     for file in current_files:
         if file not in new_data:
             base_name = os.path.basename(file)[:-3].lower()
-            kws = [base_name]
+            kws = [base_name] + _EXTRA_KEYWORDS.get(base_name, [])
             if base_name in _ALWAYS_GLOBAL:
                 kws.append("*")
-            new_data[file] = {"toggle": True, "keyword": kws}
+            new_data[file] = {"toggle": True, "keyword": kws, "limit": 15}
 
     try:
         with open(PLUGINS_FILE, "w") as f:
@@ -105,6 +114,9 @@ def _load_plugins(folder):
 
     config_data = _sync_plugins_config(files)
 
+    global _plugins_cache
+    _plugins_cache = config_data
+
     for rel_path in files:
         conf       = config_data.get(rel_path, {})
         is_enabled = conf.get("toggle", True) if isinstance(conf, dict) else True
@@ -120,6 +132,7 @@ def _load_plugins(folder):
             if hasattr(module, "on_search"):
                 raw_keywords     = conf.get("keyword", [module_name]) if isinstance(conf, dict) else [module_name]
                 module._keywords = [str(k).lower() for k in raw_keywords]
+                module._limit    = int(conf.get("limit", 15)) if isinstance(conf, dict) else 15
 
                 # Runtime safeguard: ensure always-global plugins have "*"
                 # even if Plugins.json was generated before _ALWAYS_GLOBAL included them.
@@ -162,11 +175,9 @@ def _toggle_plugin(name, current_status):
 
 def on_search(text):
     results = []
-    try:
-        with open(PLUGINS_FILE, "r") as f:
-            data = json.load(f)
-    except Exception:
-        return []
+    if _plugins_cache is None:
+        return results
+    data = _plugins_cache
 
     search_term = text.lower().strip()
     for name, conf in data.items():

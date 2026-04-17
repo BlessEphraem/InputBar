@@ -17,12 +17,33 @@ from Core.Paths import PLUGINS_DATA_DIR as _PLUGINS_DATA_DIR
 
 _APP_DATA_DIR = os.path.join(_PLUGINS_DATA_DIR, "App")
 
-apps_index = []
-ALIASES    = {}
+_CREATE_NO_WINDOW = 0x08000000
+
+apps_index    = []
+choices_index = []
+ALIASES       = {}
 
 # Extensions that indicate a registry entry is a file/artifact, not an app
 _JUNK_EXTS = {".txt", ".pdf", ".doc", ".docx", ".rtf", ".html", ".htm",
               ".chm", ".ini", ".log", ".nfo", ".url", ".xml"}
+
+# Shortcut name filters: auxiliary / non-app shortcuts to exclude from the index.
+# "TreeSize Free Help"    → last word "help"      → excluded
+# "Uninstall MyApp"       → first word "uninstall" → excluded
+# "MyApp Uninstall"       → last word "uninstall"  → excluded
+_SKIP_LAST_WORDS  = frozenset({
+    "help", "hilfe", "uninstall", "readme", "manual", "support", "website",
+    "changelog", "documentation",
+})
+_SKIP_FIRST_WORDS = frozenset({"uninstall", "deinstall", "remove"})
+
+
+def _is_aux_shortcut(name: str) -> bool:
+    """Return True if *name* looks like a Help/Uninstall/ReadMe auxiliary shortcut."""
+    words = name.lower().split()
+    if not words:
+        return False
+    return words[-1] in _SKIP_LAST_WORDS or words[0] in _SKIP_FIRST_WORDS
 
 
 _GUID_APPID_RE = re.compile(r'^\{[0-9a-fA-F\-]+\}\\(.+)$')
@@ -46,6 +67,8 @@ def _resolve_appid(appid: str) -> tuple:
     m = _GUID_APPID_RE.match(appid)
     if m:
         rel = m.group(1)                              # e.g. "dfrgui.exe"
+        if not rel.lower().endswith(".exe"):
+            return None, None, None                   # skip non-app files (docs, txt, etc.)
         sys_root = os.environ.get("SystemRoot", r"C:\Windows")
         for folder in (
             os.path.join(sys_root, "System32"),
@@ -154,6 +177,10 @@ def _scan_registry(seen_names: set, seen_normalized: set) -> list:
                             if any(name_stripped.lower().endswith(ext) for ext in _JUNK_EXTS):
                                 continue
 
+                            # Skip auxiliary registry entries: "App Help", "Uninstall App", etc.
+                            if _is_aux_shortcut(name_stripped):
+                                continue
+
                             # Exact-name dedup
                             if name_stripped.lower() in seen_names:
                                 continue
@@ -237,6 +264,10 @@ def build_index():
                 if any(app_name.lower().endswith(ext) for ext in _JUNK_EXTS):
                     continue
 
+                # Name-based filter: "TreeSize Free Help", "Uninstall MyApp", etc.
+                if _is_aux_shortcut(app_name):
+                    continue
+
                 name_lower = app_name.lower()
                 if name_lower in seen_names:
                     continue
@@ -257,35 +288,45 @@ def build_index():
                         icon_file    = icon_raw.split(",")[0].strip('"').strip()
                         _com_success = True
 
-                        # Filter: skip if target or icon source is a document/artifact
+                        # Skip if target is a known document/artifact extension
                         if target and any(target.lower().endswith(ext) for ext in _JUNK_EXTS):
                             continue
+
+                        # Skip shortcuts whose target is not an exe or a folder.
+                        # Checked regardless of whether the target file currently exists —
+                        # a stale .lnk pointing to a deleted .chm is still not an app.
+                        if target and not target.lower().endswith(".exe") and not os.path.isdir(target):
+                            continue
+
+                        # Skip if the icon location is itself a document
                         if icon_file and any(icon_file.lower().endswith(ext) for ext in _JUNK_EXTS):
                             continue
 
-                        # Skip shortcuts that open a non-executable file (e.g. Help.lnk → .chm)
-                        # Allow: .exe targets, folder targets, empty targets (UWP/store)
-                        if (target
-                                and os.path.exists(target)
-                                and not target.lower().endswith(".exe")
-                                and not os.path.isdir(target)):
-                            continue
-
-                        # Resolve best icon source (target exe > icon exe > icon .ico)
+                        # Resolve icon source: only from the actual target exe or a .ico file.
+                        # Do NOT fall back to the icon-location exe — that exe may be the main
+                        # app of a Help/Readme shortcut (e.g. TreeSizeFree.exe used as Help icon),
+                        # which would make the entry look launchable when it is not.
                         if target.lower().endswith(".exe") and os.path.exists(target):
                             exe_target = target
-                        elif icon_file.lower().endswith(".exe") and os.path.exists(icon_file):
-                            exe_target = icon_file
                         elif icon_file.lower().endswith(".ico") and os.path.exists(icon_file):
                             direct_icon = icon_file
-                    except Exception:
-                        pass  # COM failed — unknown status, keep the entry
 
-                # COM read succeeded but found nothing usable → skip.
-                # Covers UWP-style shortcuts (empty TargetPath), dead shortcuts
-                # (target exe missing), and document shortcuts missed by the junk filter.
-                # UWP apps are indexed separately in Step 2.
-                if _com_success and not exe_target and not direct_icon:
+                        # Reject auxiliary executables even when they are real .exe files:
+                        # unins000.exe, TreeSizeFreeHelp.exe, RemoveApp.exe, etc.
+                        if exe_target:
+                            _stem = os.path.splitext(os.path.basename(exe_target))[0].lower()
+                            if any(kw in _stem for kw in {
+                                "help", "uninstall", "unins", "readme", "remove",
+                            }):
+                                exe_target = None   # guard below will skip the entry
+                    except Exception:
+                        pass  # COM failed — unknown status
+
+                # If pywin32 was available but we found no usable exe/icon, skip.
+                # Covers: COM exception on a specific .lnk, empty-target UWP shortcuts
+                # (indexed properly via Get-StartApps in Step 2), and Help/Readme shortcuts
+                # whose icon source was a foreign .exe.
+                if not exe_target and not direct_icon and _HAS_WIN32COM:
                     continue
 
                 seen_names.add(name_lower)
@@ -301,7 +342,6 @@ def build_index():
 
     # --- 2. SCAN UWP APPS (MICROSOFT STORE) ---
     # Step A: get app list — fast query, never blocks indexing.
-    CREATE_NO_WINDOW = 0x08000000 if os.name == "nt" else 0
     store_apps: list = []
     try:
         cmd_list = (
@@ -311,7 +351,7 @@ def build_index():
         )
         raw = subprocess.check_output(
             cmd_list, shell=False, text=True, encoding="utf-8",
-            creationflags=CREATE_NO_WINDOW, timeout=10,
+            creationflags=_CREATE_NO_WINDOW, timeout=10,
         )
         parsed = json.loads(raw)
         store_apps = [parsed] if isinstance(parsed, dict) else parsed
@@ -324,6 +364,12 @@ def build_index():
         name  = app.get("Name")
         appid = app.get("AppID")
         if not name or not appid:
+            continue
+        # Get-StartApps returns everything in the Start Menu, including Help,
+        # Uninstall, and ReadMe entries — filter them by name just like the lnk scan.
+        if _is_aux_shortcut(name):
+            continue
+        if any(name.lower().endswith(ext) for ext in _JUNK_EXTS):
             continue
         launch_path, exe_path_val, icon_type_val = _resolve_appid(appid)
         if launch_path is None:
@@ -400,7 +446,7 @@ def build_index():
     if _appid_to_index:
         threading.Thread(
             target=_fetch_uwp_icons,
-            args=(_appid_to_index, CREATE_NO_WINDOW),
+            args=(_appid_to_index, _CREATE_NO_WINDOW),
             daemon=True,
         ).start()
 
@@ -410,6 +456,24 @@ def build_index():
         apps_index.extend(reg_entries)
     except Exception as e:
         _eprint(f"App Plugin: Error scanning registry ({e})")
+
+    global choices_index
+    choices_index.clear()
+    for app in apps_index:
+        action = app.get("path")
+        is_launchable = False
+        if action:
+            if callable(action) or action.startswith("shell:appsFolder\\"):
+                is_launchable = True
+            elif _HAS_WIN32COM and app.get("icon_type") == "app":
+                is_launchable = False
+            else:
+                is_launchable = os.path.exists(action)
+        app["is_launchable"] = is_launchable
+        choices_index.append(app["name"])
+
+    launchable_count = sum(1 for a in apps_index if a.get("is_launchable"))
+    _eprint(f"[DEBUG] build_index: total={len(apps_index)}, launchable={launchable_count}, choices={len(choices_index)}")
 
 
 # Initialisation
@@ -440,23 +504,6 @@ def _compute_score(query: str, name: str, wratio_score: float) -> float:
     return base
 
 
-def _is_launchable(result: dict) -> bool:
-    """Returns True only if the result has a path that can actually be opened."""
-    action = result.get("action")
-    if not action:
-        return False
-    if callable(action):
-        return True
-    if action.startswith("shell:appsFolder\\"):
-        return True                                   # UWP / shell-folder app — always valid
-    # When win32com was available it inspected every .lnk.
-    # icon_type "app" means it either threw an exception or found no usable
-    # exe/ico — either way the entry won't launch correctly. Hide it.
-    if _HAS_WIN32COM and result.get("icon_type") == "app":
-        return False
-    return os.path.exists(action)                     # exe / .lnk must exist on disk
-
-
 def on_search(text):
     query       = text.strip()
     query_lower = query.lower()
@@ -465,34 +512,26 @@ def on_search(text):
         return []
 
     search_term = ALIASES.get(query_lower, query_lower)
-    choices     = [app["name"] for app in apps_index]
 
     results      = []
     seen_indices = set()
 
-    # --- PASS 1: exact acronym match ---
+    # --- PASS 1 & 2: exact acronym match or substring match ---
     for i, app in enumerate(apps_index):
-        if app.get("acronym") == search_term:
-            seen_indices.add(i)
-            results.append({
-                "name":      app["name"],
-                "score":     97.0,
-                "action":    app["path"],
-                "icon_type": app.get("icon_type", "file"),
-                "icon_path": app.get("icon_path"),
-                "item_type": "app",
-                "exe_path":  app.get("exe_path"),
-            })
-
-    # --- PASS 2: exact substring in name ---
-    for i, app in enumerate(apps_index):
-        if i in seen_indices:
+        if not app.get("is_launchable", False):
             continue
-        if len(search_term) >= 2 and search_term in app["name"].lower():
+            
+        score = 0.0
+        if app.get("acronym") == search_term:
+            score = 97.0
+        elif len(search_term) >= 2 and search_term in app["name"].lower():
+            score = 92.0
+            
+        if score > 0.0:
             seen_indices.add(i)
             results.append({
                 "name":      app["name"],
-                "score":     92.0,
+                "score":     score,
                 "action":    app["path"],
                 "icon_type": app.get("icon_type", "file"),
                 "icon_path": app.get("icon_path"),
@@ -501,11 +540,16 @@ def on_search(text):
             })
 
     # --- PASS 3: fuzzy WRatio ---
-    matches = process.extract(search_term, choices, scorer=fuzz.WRatio, limit=20)
+    matches = process.extract(search_term, choices_index, scorer=fuzz.WRatio, limit=20)
 
     for name, score, index in matches:
         if index in seen_indices:
             continue
+            
+        app = apps_index[index]
+        if not app.get("is_launchable", False):
+            continue
+
         seen_indices.add(index)
 
         final_score = _compute_score(search_term, name, score)
@@ -514,7 +558,6 @@ def on_search(text):
             final_score = 100.0
 
         if final_score > 45:
-            app = apps_index[index]
             results.append({
                 "name":      name,
                 "score":     final_score,
@@ -527,14 +570,18 @@ def on_search(text):
 
     # --- PASS 4: partial_ratio for short queries ---
     if len(search_term) <= 6:
-        partial_matches = process.extract(search_term, choices, scorer=fuzz.partial_ratio, limit=15)
+        partial_matches = process.extract(search_term, choices_index, scorer=fuzz.partial_ratio, limit=15)
         for name, score, index in partial_matches:
             if index in seen_indices:
                 continue
             if score < 70:
                 continue
-            seen_indices.add(index)
+                
             app = apps_index[index]
+            if not app.get("is_launchable", False):
+                continue
+                
+            seen_indices.add(index)
             results.append({
                 "name":      name,
                 "score":     score * 0.92,
@@ -545,9 +592,5 @@ def on_search(text):
                 "exe_path":  app.get("exe_path"),
             })
 
-    # Remove entries that cannot actually be launched.
-    # Runs on every search so it catches stale index entries without a restart.
-    results = [r for r in results if _is_launchable(r)]
-
     results.sort(key=lambda x: x["score"], reverse=True)
-    return results[:15]
+    return results

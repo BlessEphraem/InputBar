@@ -16,8 +16,11 @@ from Core.Logging import dprint, eprint
 # Settings keys used to recognise the old Data/Config.json format
 _SETTINGS_KEYS = {
     "Position", "Monitor", "AlwaysOnTop", "HideOnFocusLost",
-    "HideOnPress", "LoopList", "ListMax", "Theme",
+    "HideOnPress", "LoopList", "Theme",
 }
+
+# Keys that have been removed from Settings and must be purged from existing files
+_REMOVED_SETTINGS_KEYS = {"ListMax"}
 
 # Plugin data files that must be seeded into PLUGINS_DATA_DIR on first run
 # or whenever ConfigDirectory is redirected to a new location.
@@ -72,7 +75,26 @@ def _seed_plugin_data():
                     eprint(f"Update: seed error {sub}/{fname} ({e})")
 
 
+def _purge_removed_settings() -> None:
+    """Remove keys that no longer exist from an existing Settings.json."""
+    if not os.path.exists(SETTINGS_FILE):
+        return
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        stale = _REMOVED_SETTINGS_KEYS.intersection(data.keys())
+        if stale:
+            for key in stale:
+                del data[key]
+            with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=4)
+            dprint(f"Update: removed deprecated settings key(s): {', '.join(stale)}")
+    except Exception as e:
+        eprint(f"Update: error purging deprecated settings ({e})")
+
+
 def run_migrations() -> None:
     """Entry point — call once at startup after Core.Paths is imported."""
     _migrate_old_config()
+    _purge_removed_settings()
     _seed_plugin_data()

@@ -4,6 +4,8 @@ Core/Icons.py — SVG icon loader with theme colour tinting.
 import os
 import re
 
+import functools
+
 from Core.Logging import eprint as _eprint
 
 _ICONS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Assets", "Icons")
@@ -16,6 +18,7 @@ def _colorize_svg(svg_text: str, color: str) -> str:
     return svg_text
 
 
+@functools.lru_cache(maxsize=64)
 def load_svg_icon(name: str, color: str = "#FFFFFF", size: int = 24):
     """
     Load Assets/Icons/<name>.svg, tint it with *color*, and return a QIcon.

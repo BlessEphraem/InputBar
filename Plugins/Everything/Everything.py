@@ -28,8 +28,10 @@ import winreg
 import urllib.parse
 from rapidfuzz import process, fuzz
 
-from Core.Logging import eprint as _eprint
+from Core.Logging import eprint as _eprint, dprint
 from Core.Paths import PLUGINS_DATA_DIR as _PLUGINS_DATA_DIR
+
+_CREATE_NO_WINDOW = 0x08000000 if os.name == "nt" else 0
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Paths
@@ -299,6 +301,7 @@ _DEFAULT_FAVORITES = """\
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _ensure_default_files() -> None:
+    os.makedirs(_DATA_DIR, exist_ok=True)
     if not os.path.exists(_EXTENSIONS_FILE):
         try:
             with open(_EXTENSIONS_FILE, "w", encoding="utf-8") as f:
@@ -468,11 +471,10 @@ def _show_toast_error() -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _is_everything_running() -> bool:
-    CREATE_NO_WINDOW = 0x08000000
     try:
         out = subprocess.check_output(
             ["tasklist", "/FI", "IMAGENAME eq Everything.exe", "/NH"],
-            creationflags=CREATE_NO_WINDOW,
+            creationflags=_CREATE_NO_WINDOW,
             timeout=5,
         )
         return b"Everything.exe" in out
@@ -512,10 +514,10 @@ def _startup() -> None:
 
     # 2. Start Everything silently if not already running
     if not _is_everything_running():
-        _eprint("Everything Plugin: launching Everything.exe...")
+        dprint("Everything Plugin: launching Everything.exe...")
         _start_everything(exe)
 
-    _eprint(f"Everything Plugin: ready (DLL={_DLL_NAME})")
+    dprint(f"Everything Plugin: ready (DLL={_DLL_NAME})")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

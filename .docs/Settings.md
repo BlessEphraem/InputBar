@@ -15,7 +15,6 @@ On update, new keys are injected without overwriting your existing values.
     "HideOnFocusLost": true,
     "HideOnPress": false,
     "LoopList": true,
-    "ListMax": 200,
     "Theme": "theme_default"
 }
 ```
@@ -28,7 +27,6 @@ On update, new keys are injected without overwriting your existing values.
 | `HideOnFocusLost` | bool | Close when the window loses focus |
 | `HideOnPress` | bool / string | `false` = never closes on shortcut · `"OnFocus"` = closes if already active · `"Always"` = always closes |
 | `LoopList` | bool | Loop navigation in the list (bottom → top and back) |
-| `ListMax` | int | Maximum number of results loaded (max 200) |
 | `Theme` | string | Theme file name in `Data/Themes/` (without `.json`) |
 
 > **Upgrading from an older version?** `Data/Config.json` (the previous settings file) is automatically migrated to `Data/Settings.json` on first launch and then deleted.
