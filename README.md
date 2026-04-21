@@ -48,7 +48,7 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 ## 🚀 Installation
 
 * ✅ **Setup / Portable**  
-  Download the `Setup.exe` or `Portable.zip` from the [**Releases page**](https://github.com/BlessEphraem/InputBar/releases).
+  Download the `Setup.exe` or `Portable.zip` from the [**Releases page**](https://blessephraem.github.io/wiki/programs/inputbar/releases).
 
 * ✅ **Winget**
   ```
