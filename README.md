@@ -32,7 +32,7 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 
 ---
 
-# ✨ Features
+## ✨ Features
 
 - **App search** — fuzzy search across all installed apps (Start Menu, LOCALAPPDATA, Windows registry, UWP/Store)
 - **File search** — integrates [voidtools Everything](https://www.voidtools.com/) for instant file and folder search
@@ -45,7 +45,7 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 - **IPC pipe** — can be triggered from external scripts (AutoHotkey, etc.)
 - **User data persistence** — updates inject new keys without overwriting existing settings
 
-# 🚀 Installation
+## 🚀 Installation
 
 * ✅ **Setup / Portable**  
   Download the `Setup.exe` or `Portable.zip` from the [**Releases page**](https://github.com/BlessEphraem/InputBar/releases).
@@ -63,7 +63,7 @@ Minimal interface, plugin-based, fully configurable through JSON files.
   ```
   Run `src/InputBar.pyw` (as Administrator for global hotkeys).
 
-# ♟️ How to use
+## ♟️ How to use
 
 | Action | Shortcut |
 |---|---|
@@ -74,7 +74,7 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 | Go back | `←` or select "Back" |
 | Close InputBar | `Escape` |
 
-# ⚙️ Configuration
+## ⚙️ Configuration
 Everything is managed through JSON files — no settings GUI.
 
 <a href=".docs/Configuration.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Configuration Documentation</kbd></a>
@@ -154,12 +154,12 @@ fastfetch=pwsh fastfetch
 
 ---
 
-# 🛠️ Tech Stack
+## 🛠️ Tech Stack
 - Python 3.11+
 - PyQt6
 - rapidfuzz
 - pywin32  (optional — .lnk shortcut resolution + exe icon extraction)
 
-# 📄 License
+## 📄 License
 
 GPL-3.0 license - see [LICENSE](LICENSE) for details.
