@@ -1,4 +1,4 @@
-# Hotkeys.json
+# ⌨️ Hotkeys
 
 [![](https://img.shields.io/badge/←_⚙️_Configuration-30363d?style=for-the-badge)](./Configuration.md)
 
