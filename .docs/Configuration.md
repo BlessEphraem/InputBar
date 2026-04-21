@@ -2,21 +2,14 @@
 
 **All configuration files live in the `Data/` folder** — created automatically on first launch.
 
-<h3>🧩 App Settings</h3>
-<ul>
-    <li><h3><a href="Settings.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">📜 Settings</kbd></a></h3></li>
-    <li><h3><a href="Hotkeys.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">⌨️ Hotkeys</kbd></a></h3></li>
-    <li><h3><a href="Plugins.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">📦 Plugins</kbd></a></h3></li>
-    <li><h3><a href="Theme.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">🎨 Themes</kbd></a></h3></li>
-</ul>
 
-<h3>💻 For Developers</h3>
-<ul>
-    <li><h3><a href="IPC.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">🛜 IPC</kbd></a></h3></li>
-    <li><h3><a href="CreatePlugins.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">📦 Create a Plugin</kbd></a></h3></li>
-</ul>
+### [![](https://img.shields.io/badge/📜_Settings-30363d?style=for-the-badge)](./Settings.md)
+### [![](https://img.shields.io/badge/⌨️_Hotkeys-30363d?style=for-the-badge)](./Hotkeys.md)
+### [![](https://img.shields.io/badge/📦_Plugins-30363d?style=for-the-badge)](./Plugins.md)
+### [![](https://img.shields.io/badge/🎨_Themes-30363d?style=for-the-badge)](./Theme.md)
 
-</br>
+### [![](https://img.shields.io/badge/🛜_IPC-30363d?style=for-the-badge)](./IPC.md)
+### [![](https://img.shields.io/badge/📦_Create_a_Plugin-30363d?style=for-the-badge)](./CreatePlugins.md)
 
 # 📁 `Config.json`
 
