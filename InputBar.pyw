@@ -16,6 +16,19 @@ if "--config" in sys.argv:
 # Redirect .pyc cache to Data/__pycache__ in dev mode only.
 # In frozen mode PyInstaller has already compiled everything — no .pyc generated.
 if not getattr(sys, 'frozen', False):
+    # Respect Config.json redirect before computing the cache path —
+    # otherwise pycache lands in SCRIPT_DIR/Data/ even when ConfigDirectory differs.
+    import json as _json
+    _cfg = os.path.join(SCRIPT_DIR, "Path", "Config.json")
+    if os.path.exists(_cfg):
+        try:
+            _override = _json.load(open(_cfg, "r", encoding="utf-8")).get("ConfigDirectory", "").strip()
+            if _override:
+                BASE_DIR = _override
+        except Exception:
+            pass
+    del _json, _cfg
+
     CACHE_DIR = os.path.join(BASE_DIR, "Data", "__pycache__")
     if not os.path.exists(CACHE_DIR):
         try: os.makedirs(CACHE_DIR)

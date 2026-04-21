@@ -1,5 +1,6 @@
 # Runtime user data (entirely generated at startup/usage)
 Data/
+Path/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

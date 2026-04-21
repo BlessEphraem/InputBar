@@ -1,6 +1,6 @@
 # 📦 Plugins
 
-<a href="Configuration.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Configuration</kbd></a>
+[![](https://img.shields.io/badge/←_⚙️_Configuration-30363d?style=for-the-badge)](./Configuration.md)
 
 ## 🧩 Built-in plugins
 Type `plugins` to list all loaded modules and toggle them on/off.

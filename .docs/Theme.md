@@ -1,6 +1,6 @@
 # 🎨 Themes
 
-<a href="Configuration.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Configuration</kbd></a>
+[![](https://img.shields.io/badge/←_⚙️_Configuration-30363d?style=for-the-badge)](./Configuration.md)
 
 Themes control the full visual appearance of InputBar. They are stored as `.json` files in `Data/Themes/`.
 
