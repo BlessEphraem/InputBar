@@ -7,7 +7,7 @@
     <li><h3><a href="Settings.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">📜 Settings</kbd></a></h3></li>
     <li><h3><a href="Hotkeys.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">⌨️ Hotkeys</kbd></a></h3></li>
     <li><h3><a href="Plugins.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">📦 Plugins</kbd></a></h3></li>
-    <li><h3><a href="Theme.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">🎨 Theme</kbd></a></h3></li>
+    <li><h3><a href="Theme.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">🎨 Themes</kbd></a></h3></li>
 </ul>
 
 <h3>💻 For Developers</h3>

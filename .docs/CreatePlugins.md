@@ -10,7 +10,7 @@ Create a destination folder for the project, then open your preferred terminal o
 cd "C:\Your\Folder\Path\"
 git clone https://github.com/BlessEphraem/InputBar
 ```
-
+1
 Before running the application, you need to install the required Python packages. You can easily do this using pip:
 ```Bash
 pip install PyQt6 rapidfuzz keyboard pywin32
