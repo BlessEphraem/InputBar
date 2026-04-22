@@ -65,6 +65,14 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 
 ## ♟️ How to use
 
+<!-- wiki-hide-start -->
+
+<a href="https://blessephraem.github.io/wiki/programs/inputbar">
+  <img src="https://capsule-render.vercel.app/api?type=soft&color=278BF5&height=120&text=%F0%9F%8C%90%20%F0%9D%90%96%F0%9D%90%88%F0%9D%90%8A%F0%9D%90%88%20%F0%9F%8C%90&fontColor=ffffff&fontSize=45" alt="Wiki Banner">
+</a>
+
+<!-- wiki-hide-end -->
+
 | Action | Shortcut |
 |---|---|
 | Open InputBar | `Ctrl+Space` *(default)* |
@@ -73,14 +81,6 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 | Open submenu | `→` |
 | Go back | `←` or select "Back" |
 | Close InputBar | `Escape` |
-
-<!-- wiki-hide-start -->
-
-<a href="https://blessephraem.github.io/wiki/programs/inputbar">
-  <img src="https://capsule-render.vercel.app/api?type=soft&color=278BF5&height=120&text=%F0%9F%8C%90%20%F0%9D%90%96%F0%9D%90%88%F0%9D%90%8A%F0%9D%90%88%20%F0%9F%8C%90&fontColor=ffffff&fontSize=45" alt="Wiki Banner">
-</a>
-
-<!-- wiki-hide-end -->
 
 ## ⚙️ Configuration
 Everything is managed through JSON files — no settings GUI.
