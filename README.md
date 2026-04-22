@@ -74,10 +74,18 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 | Go back | `←` or select "Back" |
 | Close InputBar | `Escape` |
 
+<!-- wiki-hide-start -->
+
+<a href="https://blessephraem.github.io/wiki/programs/inputbar">
+  <img src="https://capsule-render.vercel.app/api?type=soft&color=278BF5&height=120&text=%F0%9F%8C%90%20%F0%9D%90%96%F0%9D%90%88%F0%9D%90%8A%F0%9D%90%88%20%F0%9F%8C%90&fontColor=ffffff&fontSize=45" alt="Wiki Banner">
+</a>
+
+<!-- wiki-hide-end -->
+
 ## ⚙️ Configuration
 Everything is managed through JSON files — no settings GUI.
 
-<a href=".docs/Configuration.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Configuration Documentation</kbd></a>
+[![](https://img.shields.io/badge/→_⚙️_Configuration-30363d?style=for-the-badge)](https://blessephraem.github.io/wiki/programs/inputbar/configuration)
 
 ## 🧩 App
 
@@ -90,7 +98,7 @@ vsc       →  Visual Studio Code  (via alias)
 
 Press `→` on any result to access **Start as admin**, **Open folder**, or **Copy file path**.
 
-<a href=".docs/Plugins/App.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ App Documentation</kbd></a>
+[![](https://img.shields.io/badge/→_🧩_App_Documentation-32C73E?style=for-the-badge)](https://blessephraem.github.io/wiki/programs/inputbar/plugins/app)
 
 ## 🧩 Everything (file search)
 
@@ -109,7 +117,7 @@ wallpapers=C:\Users\Me\Pictures\Wallpapers
 projects=D:\Dev\Projects
 ```
 
-<a href=".docs/Plugins/Everything.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Everything Documentation</kbd></a>
+[![](https://img.shields.io/badge/→_🧩_Everything_Documentation-32C73E?style=for-the-badge)](https://blessephraem.github.io/wiki/programs/inputbar/plugins/everything)
 
 ## 🧩 Calc
 
@@ -119,8 +127,7 @@ Type any math expression. The result appears at the top — press `Enter` to cop
 (10 * 3) / 4  →  = 7.5
 2 ^ 8         →  = 256
 ```
-
-<a href=".docs/Plugins/Calc.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Calc Documentation</kbd></a>
+[![](https://img.shields.io/badge/→_🧩_Calc_Documentation-32C73E?style=for-the-badge)](https://blessephraem.github.io/wiki/programs/inputbar/plugins/calc)
 
 ## 🧩 System
 
@@ -132,7 +139,7 @@ restart   →  Restart the PC
 shutdown  →  Shut down
 ```
 
-<a href=".docs/Plugins/System.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ System Documentation</kbd></a>
+[![](https://img.shields.io/badge/→_🧩_System_Documentation-32C73E?style=for-the-badge)](https://blessephraem.github.io/wiki/programs/inputbar/plugins/system)
 
 ## 🧩 Shell
 
@@ -150,7 +157,7 @@ btop=cmd btop
 fastfetch=pwsh fastfetch
 ```
 
-<a href=".docs/Plugins/Shell.md" style="text-decoration:none"><kbd style="background:#1f6feb;color:#fff;border:none;padding:3px 10px;border-radius:5px">→ Shell Documentation</kbd></a>
+[![](https://img.shields.io/badge/→_🧩_Shell_Documentation-32C73E?style=for-the-badge)](https://blessephraem.github.io/wiki/programs/inputbar/plugins/shell)
 
 ---
 
