@@ -89,11 +89,16 @@ def _msgbox_yesno(title: str, message: str, icon: int = _MB_ICONQUESTION) -> boo
     return ctypes.windll.user32.MessageBoxW(0, message, title, _MB_YESNO | icon) == _IDYES
 
 
+_DATA_SUBDIRS = ("Data", "Plugins")
+
+
 def _migrate_config_if_needed(old_path: str, new_path: str) -> None:
     if os.path.normcase(os.path.normpath(old_path)) == \
        os.path.normcase(os.path.normpath(new_path)):
         return
-    if not os.path.isdir(old_path):
+
+    to_move = [d for d in _DATA_SUBDIRS if os.path.isdir(os.path.join(old_path, d))]
+    if not to_move:
         return
 
     if _msgbox_yesno(
@@ -105,14 +110,11 @@ def _migrate_config_if_needed(old_path: str, new_path: str) -> None:
     ):
         try:
             os.makedirs(new_path, exist_ok=True)
-            for item in os.listdir(old_path):
-                src = os.path.join(old_path, item)
-                dst = os.path.join(new_path, item)
-                if os.path.isdir(src):
-                    shutil.copytree(src, dst, dirs_exist_ok=True)
-                else:
-                    shutil.copy2(src, dst)
-            shutil.rmtree(old_path, ignore_errors=True)
+            for name in to_move:
+                src = os.path.join(old_path, name)
+                dst = os.path.join(new_path, name)
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+                shutil.rmtree(src, ignore_errors=True)
         except Exception as exc:
             ctypes.windll.user32.MessageBoxW(
                 0,
@@ -128,7 +130,8 @@ def _migrate_config_if_needed(old_path: str, new_path: str) -> None:
             f"(InputBar will create fresh default files at the new location.)",
             _MB_ICONWARNING
         ):
-            shutil.rmtree(old_path, ignore_errors=True)
+            for name in to_move:
+                shutil.rmtree(os.path.join(old_path, name), ignore_errors=True)
 
 
 def _has_files(path: str) -> bool:
