@@ -12,14 +12,14 @@
 
 <p align="center">
   <a href="https://github.com/BlessEphraem/InputBar/releases">
-    <img src="https://img.shields.io/github/v/release/BlessEphraem/InputBar?style=flat-square&color=blue&v=2" alt="Latest Release">
+    <img src="https://img.shields.io/github/v/release/BlessEphraem/InputBar?style=flat-square&color=blue&v=1" alt="Latest Release">
   </a>
-  <img src="https://img.shields.io/badge/OS-Windows-0078D6?style=flat-square&logo=windows&logoColor=white&v=2" alt="Windows Only">
+  <img src="https://img.shields.io/badge/OS-Windows-0078D6?style=flat-square&logo=windows&logoColor=white&v=1" alt="Windows Only">
   <a href="https://github.com/BlessEphraem/InputBar/releases">
-    <img src="https://img.shields.io/github/downloads/BlessEphraem/InputBar/total?style=flat-square&color=success" alt="Downloads">
+    <img src="https://img.shields.io/github/downloads/BlessEphraem/InputBar/total?style=flat-square&color=success&v=1" alt="Downloads">
   </a>
   <a href="https://github.com/BlessEphraem/InputBar/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/BlessEphraem/InputBar?style=flat-square&v=2" alt="License">
+    <img src="https://img.shields.io/github/license/BlessEphraem/InputBar?style=flat-square&v=1" alt="License">
   </a>
 </p>
 
