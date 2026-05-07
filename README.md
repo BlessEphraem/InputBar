@@ -50,9 +50,11 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 <!-- tabs-start -->
 
 * ✅ **Setup / Portable**  
+
   Download the `Setup.exe` or `Portable.zip` from the [**Releases page**](https://blessephraem.github.io/wiki/programs/inputbar/releases).
 
 * ✅ **Winget**
+
   ```
   winget install Ephraem.InputBar
   ```
