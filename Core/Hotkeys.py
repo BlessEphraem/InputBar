@@ -9,7 +9,7 @@ import win32file
 import win32pipe
 import pywintypes
 
-from Core.Paths import DATA_DIR, SETTINGS_FILE, WINKEYHOOK_EXE
+from Core.Paths import DATA_DIR, SETTINGS_FILE, WINKEYHOOK_EXE, WINKEYHOOK_SETUP_EXE
 from Core.Logging import dprint, eprint
 
 HOTKEYS_FILE = os.path.join(DATA_DIR, "hotkeys.json")
@@ -204,6 +204,24 @@ def _try_connect() -> bool:
         return False
 
 
+def _ensure_installed() -> bool:
+    if os.path.exists(str(WINKEYHOOK_EXE)):
+        return True
+    if not os.path.exists(str(WINKEYHOOK_SETUP_EXE)):
+        eprint("Hotkeys: WinKeyHook setup not found in Lib/")
+        return False
+    dprint("Hotkeys: WinKeyHook not installed — running silent installer...")
+    try:
+        subprocess.run([
+            "powershell", "-Command",
+            f'Start-Process -FilePath "{WINKEYHOOK_SETUP_EXE}" -ArgumentList "/SILENT" -Verb RunAs -Wait',
+        ], check=True, capture_output=True)
+    except Exception as e:
+        eprint(f"Hotkeys: WinKeyHook install failed ({e})")
+        return False
+    return os.path.exists(str(WINKEYHOOK_EXE))
+
+
 def _launch_daemon() -> None:
     if not os.path.exists(str(WINKEYHOOK_EXE)):
         eprint(f"Hotkeys: WinKeyHook.exe not found at {WINKEYHOOK_EXE}")
@@ -290,6 +308,8 @@ def register_hotkeys(hotkeys_config: dict, callback_show) -> None:
 
     has_win, parts = _parse_hotkey(show_key)
     wkh_spec = _translate_to_wkh(show_key)
+
+    _ensure_installed()
 
     connected = _try_connect()
     if not connected:

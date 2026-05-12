@@ -236,5 +236,6 @@ _write_last_config(BASE_DIR)
 
 # WinKeyHook daemon — shared system-wide low-level key hook
 _pf = os.environ.get("ProgramW6432", os.environ.get("ProgramFiles", "C:\\Program Files"))
-WINKEYHOOK_EXE = os.path.join(_pf, "Ephraem", "Daemons", "WinKeyHook.exe")
+WINKEYHOOK_EXE       = os.path.join(_pf, "Ephraem", "Daemons", "WinKeyHook.exe")
+WINKEYHOOK_SETUP_EXE = os.path.join(APP_ROOT, "Lib", "WinKeyHook_setup.exe")
 

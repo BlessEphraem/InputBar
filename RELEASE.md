@@ -7,6 +7,6 @@ https://github.com/BlessEphraem/WinKeyHook
 
 **What changes for you:**
 - The installer automatically removes the old `Lib\Core\winkey_hook.exe` if present.
-- InputBar detects whether the WinKeyHook Daemon is installed and launches it automatically when needed (e.g. when a `win`, `lwin`, or `rwin` hotkey is configured).
-- If the daemon is not installed or is outdated, InputBar will warn you.
-- Install WinKeyHook separately from its own installer — it runs system-wide and is shared across all apps that need low-level Windows key interception.
+- On first launch, InputBar automatically installs the WinKeyHook Daemon if it is not already present (a UAC prompt will appear).
+- Once installed, InputBar launches the daemon automatically whenever a `win`, `lwin`, or `rwin` hotkey is configured.
+- If the daemon is already running (e.g. from another app), InputBar connects to it directly without re-launching it.
