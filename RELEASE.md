@@ -1,8 +1,12 @@
-# **RELEASE NOTE: 1.2.3**
+# **RELEASE NOTE: 1.3.0**
 
-## Data Directory Management
+## WinKeyHook — External Daemon
 
-- **Choose your data location at install time** — A new step in the installer lets you pick where InputBar stores its settings, themes and history. Leave it as-is to keep data in the install folder (default behaviour).
-- **Config path change detection** — If you redirect `Path\Config.json` to a new location and restart InputBar, a dialog will offer to move your existing data there automatically.
-- **Old data cleanup** — If you decline the move, a second dialog lets you delete the now-unused data instead of leaving it behind.
-- **Dead data detection** — On startup, if your active data directory differs from the install folder, InputBar checks for leftover `Data\` and `Plugins\` directories in the install folder and offers to remove them.
+The bundled `winkey_hook.exe` (previously shipped in `Lib\Core\`) has been removed and replaced by the **WinKeyHook Daemon**, an independent open-source tool available at:
+https://github.com/BlessEphraem/WinKeyHook
+
+**What changes for you:**
+- The installer automatically removes the old `Lib\Core\winkey_hook.exe` if present.
+- InputBar detects whether the WinKeyHook Daemon is installed and launches it automatically when needed (e.g. when a `win`, `lwin`, or `rwin` hotkey is configured).
+- If the daemon is not installed or is outdated, InputBar will warn you.
+- Install WinKeyHook separately from its own installer — it runs system-wide and is shared across all apps that need low-level Windows key interception.

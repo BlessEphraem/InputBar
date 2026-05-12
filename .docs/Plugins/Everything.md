@@ -1,7 +1,5 @@
 # 💫 Plugin - Everything
 
-<a href="../Plugins.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Back to Plugins</kbd></a>
-
 Search for files and folders on your computer instantly using the **[Everything](https://www.voidtools.com/)** search engine integration.
 
 <p style="font-weight: bold; color: #ff6b6b">⚠️ Important: Everything must be installed on your computer for this plugin to work.</p>

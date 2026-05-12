@@ -2,14 +2,6 @@
 
 **All configuration files live in the `Data/` folder** — created automatically on first launch.
 
-### [![](https://img.shields.io/badge/📜_Settings-30363d?style=for-the-badge)](./Settings.md)
-### [![](https://img.shields.io/badge/⌨️_Hotkeys-30363d?style=for-the-badge)](./Hotkeys.md)
-### [![](https://img.shields.io/badge/📦_Plugins-30363d?style=for-the-badge)](./Plugins.md)
-### [![](https://img.shields.io/badge/🎨_Themes-30363d?style=for-the-badge)](./Theme.md)
-
-### [![](https://img.shields.io/badge/🛜_IPC-30363d?style=for-the-badge)](./IPC.md)
-### [![](https://img.shields.io/badge/📦_Create_a_Plugin-30363d?style=for-the-badge)](./CreatePlugins.md)
-
 ## 📁 `Config.json`
 
 Located in `Path\Config.json`.  

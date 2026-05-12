@@ -234,3 +234,7 @@ LOG_FILE = os.path.join(tempfile.gettempdir(), "InputBar.log")
 
 _write_last_config(BASE_DIR)
 
+# WinKeyHook daemon — shared system-wide low-level key hook
+_pf = os.environ.get("ProgramW6432", os.environ.get("ProgramFiles", "C:\\Program Files"))
+WINKEYHOOK_EXE = os.path.join(_pf, "Ephraem", "Daemons", "WinKeyHook.exe")
+

@@ -66,7 +66,7 @@ These are the keys you hold while pressing another.
 
 > **Aliases:** Both forms are accepted and automatically normalised to the short form in `hotkeys.json`.
 
-> **Windows key:** When `win`, `lwin`, or `rwin` is part of the shortcut, InputBar automatically launches a background process (`winkey_hook.exe`) that intercepts the key at system level, preventing the Start Menu from opening. The process is completely invisible.
+> **Windows key:** When `win`, `lwin`, or `rwin` is part of the shortcut, InputBar uses the **WinKeyHook** daemon (a shared system-wide process) to intercept the key at low level, preventing the Start Menu from opening. WinKeyHook must be installed separately; InputBar launches it automatically if it is not already running.
 
 ---
 

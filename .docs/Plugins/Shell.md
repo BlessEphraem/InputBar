@@ -1,7 +1,5 @@
 # 💠 Plugin - Shell
 
-<a href="../Plugins.md" style="text-decoration:none"><kbd style="background:#30363d;color:#e6edf3;border:none;padding:3px 10px;border-radius:5px">← Back to Plugins</kbd></a>
-
 Executes shell commands and manages named command shortcuts (favorites).
 
 > **Keywords:** `shell` · `/` · `*` *(global — active on every search)* - [Edit in `Plugins.json`](../Plugins.md)
