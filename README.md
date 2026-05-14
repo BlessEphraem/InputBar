@@ -7,7 +7,7 @@
 </div>
 
 <div align="center">
-  <img src="./Assets/Icons/Logo.svg" width="300" alt="InputBar">
+  <img src="./src/Assets/Icons/Logo.svg" width="300" alt="InputBar">
 </div>
 
 <div align="center">
@@ -43,7 +43,7 @@ Minimal interface, plugin-based, fully configurable through JSON files.
 <!-- wiki-hide-end -->
 
 <div align="center">
-  <img src=".docs/medias/preview_InputBar.png" width="100%" alt="Preview Search Bar">
+  <img src="./src/.docs/medias/preview_InputBar.png" width="100%" alt="Preview Search Bar">
 </div>
 
 <br>
