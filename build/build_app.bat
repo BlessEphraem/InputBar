@@ -16,6 +16,34 @@ for /f "usebackq tokens=*" %%A in ("%TEMP_META%") do (
 )
 del "%TEMP_META%" 2>nul
 
+:: ── Version selection ─────────────────────────────────────────────────────
+set "GITHUB_VER="
+for /f "usebackq delims=" %%V in (`gh api repos/BlessEphraem/InputBar/releases/latest --jq ".tag_name" 2^>nul`) do (
+    if not defined GITHUB_VER set "GITHUB_VER=%%V"
+)
+
+if defined GITHUB_VER (
+    for /f "tokens=1,2,3 delims=." %%A in ("!GITHUB_VER!") do (
+        set /a "_patch=%%C + 1"
+        set "SUGGESTED_VER=%%A.%%B.!_patch!"
+    )
+    echo.
+    echo   GitHub latest : !GITHUB_VER!  -^>  !SUGGESTED_VER! ^(suggested^)
+    set /p "NEW_VERSION=  Build version [!SUGGESTED_VER!]: "
+    if "!NEW_VERSION!"=="" set "NEW_VERSION=!SUGGESTED_VER!"
+) else (
+    echo.
+    echo   ^(GitHub unreachable -- using project.json: v!APP_VERSION!^)
+    set /p "NEW_VERSION=  Build version [!APP_VERSION!]: "
+    if "!NEW_VERSION!"=="" set "NEW_VERSION=!APP_VERSION!"
+)
+
+if not "!NEW_VERSION!"=="!APP_VERSION!" (
+    powershell -NoProfile -Command "$j = Get-Content '%PROJECT_JSON%' -Raw | ConvertFrom-Json; $j.version = '!NEW_VERSION!'; $j | ConvertTo-Json -Depth 10 | Set-Content '%PROJECT_JSON%' -Encoding UTF8"
+    echo   [i] project.json: !APP_VERSION! -^> !NEW_VERSION!
+    set "APP_VERSION=!NEW_VERSION!"
+)
+
 set "BUILD_DIR=build_cmake"
 set "RELEASES_DIR=releases"
 set "UTILS_DIR=%~dp0..\src\Utils"

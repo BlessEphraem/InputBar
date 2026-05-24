@@ -1,8 +1,8 @@
-{
-    "name": "InputBar",
-    "version": "2.0.0",
-    "publisher": "Ephraem",
-    "guid": "9894a5de-a9c6-4c3c-8271-156ac1cb42e1",
-    "github_repo": "BlessEphraem/InputBar",
-    "winkeyhook_sha256": ""
+﻿{
+    "name":  "InputBar",
+    "version":  "2.0.1",
+    "publisher":  "Ephraem",
+    "guid":  "9894a5de-a9c6-4c3c-8271-156ac1cb42e1",
+    "github_repo":  "BlessEphraem/InputBar",
+    "winkeyhook_sha256":  ""
 }

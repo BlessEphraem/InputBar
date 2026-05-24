@@ -322,6 +322,41 @@ def _launch_daemon() -> None:
         log_error(f"Hotkeys: failed to launch WinKeyHook daemon ({e})")
 
 
+def _start_via_task_scheduler() -> bool:
+    try:
+        result = subprocess.run(
+            ["schtasks.exe", "/Run", "/TN", "WinKeyHook"],
+            creationflags=subprocess.CREATE_NO_WINDOW,
+            capture_output=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            log_debug("Hotkeys: WinKeyHook started via Task Scheduler")
+            return True
+        log_debug(f"Hotkeys: schtasks /Run failed (rc={result.returncode}) — task absent?")
+        return False
+    except Exception as e:
+        log_debug(f"Hotkeys: schtasks unavailable ({e})")
+        return False
+
+
+def _launch_daemon_elevated() -> None:
+    if not os.path.exists(str(WINKEYHOOK_EXE)):
+        log_error(f"Hotkeys: WinKeyHook.exe not found at {WINKEYHOOK_EXE}")
+        return
+    try:
+        import ctypes
+        ret = ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", str(WINKEYHOOK_EXE), "0", None, 0,  # SW_HIDE
+        )
+        if ret > 32:
+            log_debug("Hotkeys: WinKeyHook started elevated via ShellExecute")
+        else:
+            log_error(f"Hotkeys: ShellExecute runas failed (code {ret})")
+    except Exception as e:
+        log_error(f"Hotkeys: elevated launch failed ({e})")
+
+
 def _start_reader(callback_show: Callable) -> None:
     global _reader_thread
 
@@ -441,12 +476,31 @@ def register_hotkeys(hotkeys_config: dict, callback_show: Callable) -> None:
 
     connected = _try_connect()
     if not connected:
-        _launch_daemon()
-        for _ in range(_PIPE_CONNECT_RETRIES):
-            time.sleep(_PIPE_RETRY_DELAY_S)
-            if _try_connect():
-                connected = True
-                break
+        # 1. Silent elevated start via pre-configured Task Scheduler task (no UAC).
+        if _start_via_task_scheduler():
+            for _ in range(_PIPE_CONNECT_RETRIES):
+                time.sleep(_PIPE_RETRY_DELAY_S)
+                if _try_connect():
+                    connected = True
+                    break
+
+        # 2. Direct launch (works when exe has no requireAdministrator manifest).
+        if not connected:
+            _launch_daemon()
+            for _ in range(_PIPE_CONNECT_RETRIES):
+                time.sleep(_PIPE_RETRY_DELAY_S)
+                if _try_connect():
+                    connected = True
+                    break
+
+        # 3. Last resort: ShellExecute runas (shows UAC prompt once).
+        if not connected:
+            _launch_daemon_elevated()
+            for _ in range(_PIPE_CONNECT_RETRIES):
+                time.sleep(_PIPE_RETRY_DELAY_S)
+                if _try_connect():
+                    connected = True
+                    break
 
     if connected:
         _registered_spec = wkh_spec
